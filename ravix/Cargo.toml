@@ -1,0 +1,17 @@
+[package]
+name = "ravix"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.7", features = ["json", "macros"] }
+tower = { version = "0.4" }
+tower-http = { version = "0.5", features = ["trace"] }
+inventory = "0.3"
+async-trait = "0.1"
+thiserror = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ravix-macros = { path = "../ravix-macros" }
+http = "1"
