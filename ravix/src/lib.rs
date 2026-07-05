@@ -12,6 +12,7 @@ pub use container::{BindingCheck, Container, ContainerRef, Inject, Injectable};
 pub use error::FrameworkError;
 pub use handler::RouteDescriptor;
 pub use middleware::{CorsConfig, CorsConfigBuilder};
+pub use middleware::MiddlewareChain;
 pub use response::Http;
 
 // Re-export proc-macros so users import everything from `ravix`.
@@ -42,8 +43,8 @@ pub use inventory;
 // Re-export frequently used axum types with cleaner names.
 pub use axum::{
     body::Body,
-    extract::{Path, Query, State},
-    http::{Request, StatusCode},
+    extract::{Path, Query, Request, State},
+    http::StatusCode,
     middleware::from_fn as middleware_fn,
     middleware::Next,
     response::IntoResponse,
@@ -66,4 +67,5 @@ pub mod prelude {
         Body, IntoResponse, Json, Next, Path, Query, Request, Response, State, StatusCode,
     };
     pub use crate::{Container, ContainerRef, CorsConfig, CorsConfigBuilder, Inject, Injectable};
+    pub use crate::MiddlewareChain;
 }

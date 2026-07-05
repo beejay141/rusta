@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use tokio::net::TcpListener;
 
-use crate::{container::ContainerRef, middleware::CorsConfig, router::RouterBuilder};
+use crate::{container::ContainerRef, middleware::CorsConfig, middleware::MiddlewareChain, router::RouterBuilder};
 
 /// Top-level application builder.
 ///
@@ -23,6 +23,8 @@ use crate::{container::ContainerRef, middleware::CorsConfig, router::RouterBuild
 pub struct App {
     container: Option<ContainerRef>,
     cors: Option<Arc<CorsConfig>>,
+    middleware: Option<MiddlewareChain>,
+    base_path: Option<String>,
 }
 
 impl App {
@@ -30,6 +32,8 @@ impl App {
         Self {
             container: None,
             cors: None,
+            middleware: None,
+            base_path: None,
         }
     }
 
@@ -71,6 +75,62 @@ impl App {
         self
     }
 
+    /// Attach a global middleware pipeline.
+    ///
+    /// Layers are applied in registration order: the first added layer runs
+    /// closest to the handler (innermost), the last added layer wraps
+    /// everything (outermost).
+    ///
+    /// # Example
+    /// ```no_run
+    /// # use ravix::{App, Container, CorsConfig, MiddlewareChain};
+    /// # use ravix::{Request, Next, Response};
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// async fn my_mw(
+    ///     request: Request,
+    ///     next: Next,
+    /// ) -> Response {
+    ///     next.run(request).await
+    /// }
+    ///
+    /// let chain = MiddlewareChain::new()
+    ///     .chain(my_mw);
+    /// let mut container = Container::new();
+    /// App::new()
+    ///     .container(container)
+    ///     .middleware(chain)
+    ///     .run("0.0.0.0:3000")
+    ///     .await;
+    /// # }
+    /// ```
+    pub fn middleware(mut self, chain: MiddlewareChain) -> Self {
+        self.middleware = Some(chain);
+        self
+    }
+
+    /// Set a global prefix for all routes (e.g. `"/api/v1"`).
+    ///
+    /// The prefix is prepended before each controller's base path.
+    ///
+    /// # Example
+    /// ```no_run
+    /// # use ravix::{App, Container};
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// let mut container = Container::new();
+    /// App::new()
+    ///     .container(container)
+    ///     .base_path("/my_service/v1")
+    ///     .run("0.0.0.0:3000")
+    ///     .await;
+    /// # }
+    /// ```
+    pub fn base_path(mut self, path: impl Into<String>) -> Self {
+        self.base_path = Some(path.into());
+        self
+    }
+
     /// Build the `axum::Router` without starting a server.
     ///
     /// Useful for integration testing with `tower::ServiceExt::oneshot`.
@@ -89,7 +149,11 @@ impl App {
                 errors.join("\n")
             );
         }
-        RouterBuilder::build_with_cors(container, self.cors)
+        let router = RouterBuilder::build_with_cors(container, self.cors, self.base_path);
+        match self.middleware {
+            Some(chain) => chain.apply(router),
+            None => router,
+        }
     }
 
     /// Start the HTTP server on `addr` (e.g. `"0.0.0.0:3000"`).
