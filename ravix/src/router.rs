@@ -2,11 +2,8 @@ use std::sync::Arc;
 
 use axum::Router;
 
-use crate::{
-    container::ContainerRef,
-    handler::RouteDescriptor,
-    middleware::{apply_cors, CorsConfig},
-};
+use crate::middleware::{apply_cors, CorsConfig};
+use ravix_di::{inventory, ContainerRef, RouteDescriptor};
 
 /// Assembles an `axum::Router` from every [`RouteDescriptor`] that was
 /// submitted via `inventory::submit!` (i.e. from `#[controller]` macros).

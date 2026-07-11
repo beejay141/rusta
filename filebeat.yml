@@ -1,0 +1,16 @@
+filebeat.inputs:
+  - type: log
+    paths:
+      - "/logs/apm.ndjson"
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields_under_root: true
+    fields:
+      service: blog-api
+
+output.elasticsearch:
+  hosts: ["${ELASTICSEARCH_URL:http://elasticsearch:9200}"]
+  index: "ravix-apm-%{+yyyy.MM.dd}"
+
+setup.template.name: "ravix-apm"
+setup.template.pattern: "ravix-apm-*"

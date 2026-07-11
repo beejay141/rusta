@@ -1,0 +1,21 @@
+/* Custom Starlight styles */
+:root {
+  --sl-color-accent: #3b82f6;
+  --sl-color-accent-low: #dbeafe;
+  --sl-color-accent-high: #1e40af;
+}
+
+/* Code block styling */
+pre {
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Table styling */
+table {
+  font-size: 0.875rem;
+}
+
+th, td {
+  padding: 0.5rem 0.75rem;
+}

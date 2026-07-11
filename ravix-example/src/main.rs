@@ -1,26 +1,32 @@
 use std::sync::Arc;
 
-use ravix::{App, Container, CorsConfig, Injectable};
+use ravix::{App, Container, CorsConfig, MiddlewareChain};
 use ravix_apm::{apm_middleware, config as apm_config, Apm};
-use ravix::MiddlewareChain;
 use ravix_logger::{config as log_config, logger_middleware, Logger};
 
+mod config;
 mod controllers;
+mod db;
+mod errors;
 mod middleware;
 mod models;
 mod repositories;
 mod services;
 
-use controllers::UserController;
-use repositories::{InMemoryUserRepository, UserRepository};
-use services::UserService;
+use config::AppConfig;
+use controllers::register_controllers;
+use repositories::register_repositories;
+use services::register_services;
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok();
+    let app_config = AppConfig::from_env();
+
     // ── APM ─────────────────────────────────────────────────────────────────
-    Apm::configure(
+    let apm = Apm::configure(
         apm_config()
-            .service_name("ravix-example")
+            .service_name("blog-api")
             .service_version("0.1.0")
             .environment("development")
             .log_path("apm.ndjson")
@@ -30,9 +36,9 @@ async fn main() {
     .await;
 
     // ── Logger ───────────────────────────────────────────────────────────────
-    Logger::configure(
+    let logger = Logger::configure(
         log_config()
-            .service_name("ravix-example")
+            .service_name("blog-api")
             .service_version("0.1.0")
             .environment("development")
             .add_classification("PUBLIC", "public.ndjson")
@@ -42,56 +48,56 @@ async fn main() {
     .await;
 
     let mut container = Container::new();
-
-    // ── Infrastructure ─────────────────────────────────────────────────────
-    let logger = Logger::new();
+    container.register(apm);
     container.register(logger);
 
-    // ── DAL layer ─────────────────────────────────────────────────────────────
-    let repo = InMemoryUserRepository::construct(&container) as Arc<dyn UserRepository>;
-    container.register(repo);
+    let db = db::init_mongo(&app_config.mongo_uri, &app_config.mongo_db).await;
+    container.register(db);
 
-    // ── Service layer ─────────────────────────────────────────────────────────
-    let svc = UserService::construct(&container);
-    container.register(svc);
+    container.register(Arc::new(app_config.clone()));
 
-    // ── Controller layer ───────────────────────────────────────────────────────
-    let ctrl = UserController::construct(&container);
-    container.register(ctrl);
+    // ── Repositories ──────────────────────────────────────────────────────
+    register_repositories(&mut container);
 
-    // ── CORS (optional) ───────────────────────────────────────────────────────
+    // ── Services ──────────────────────────────────────────────────────────
+    register_services(&mut container);
+
+    // ── Controllers ───────────────────────────────────────────────────────
+    register_controllers(&mut container);
+
+    // ── CORS ─────────────────────────────────────────────────────────────
     let cors = CorsConfig::builder()
         .allow_origins(vec![
-            "http://localhost:3000".to_string(),
-            "http://localhost:5173".to_string(),
+            String::from("http://localhost:3000"),
+            String::from("http://localhost:5173"),
         ])
         .allow_methods(vec![
-            "GET".to_string(),
-            "POST".to_string(),
-            "PUT".to_string(),
-            "DELETE".to_string(),
-            "PATCH".to_string(),
+            String::from("GET"),
+            String::from("POST"),
+            String::from("PUT"),
+            String::from("DELETE"),
+            String::from("PATCH"),
         ])
         .allow_headers(vec![
-            "content-type".to_string(),
-            "authorization".to_string(),
+            String::from("content-type"),
+            String::from("authorization"),
         ])
         .max_age(3600)
         .build();
 
-    // ── Middleware ────────────────────────────────────────────────────────────
+    // ── Middleware ────────────────────────────────────────────────────────
     let middleware = MiddlewareChain::new()
         .chain(logger_middleware)
         .chain(apm_middleware);
 
-    // ── Boot ──────────────────────────────────────────────────────────────────
+    // ── Boot ──────────────────────────────────────────────────────────────
     App::new()
         .container(container)
         .cors(cors)
         .middleware(middleware)
-        .run("0.0.0.0:3001")
+        .run(&app_config.server_port)
         .await;
 
-    // Gracefully drain all log writers before the runtime drops.
+    Apm::shutdown().await;
     Logger::shutdown().await;
 }

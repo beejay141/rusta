@@ -1,0 +1,11 @@
+[package]
+name = "ravix-di"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7", features = ["json", "macros"] }
+inventory = "0.3"
+async-trait = "0.1"
+thiserror = "1"
+serde_json = "1"

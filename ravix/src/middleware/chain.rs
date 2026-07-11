@@ -15,6 +15,13 @@ use tower::Service;
 /// the **last** added layer ends up **outermost**.
 /// This matches tower convention where the last `.layer()` call is outermost.
 ///
+/// # Architecture
+///
+/// - Uses type-erased layers for flexibility
+/// - Supports both function middleware and tower layers
+/// - Lock-free after construction
+/// - Consumed once during `App::build()`
+///
 /// # Example
 /// ```ignore
 /// use ravix::MiddlewareChain;
@@ -29,6 +36,9 @@ pub struct MiddlewareChain {
 
 impl MiddlewareChain {
     /// Create an empty middleware chain.
+    ///
+    /// Use [`Self::chain`] to add function middleware or
+    /// [`Self::add_layer`] to add tower layers.
     pub fn new() -> Self {
         Self { layers: Vec::new() }
     }
@@ -96,6 +106,7 @@ impl MiddlewareChain {
     /// Consume the chain and apply all stored layers to a router.
     ///
     /// The chain is consumed — call this once per `App::build()`.
+    /// Layers are applied in registration order (first = innermost).
     pub fn apply(self, router: Router) -> Router {
         self.layers.into_iter().fold(router, |r, f| f(r))
     }

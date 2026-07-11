@@ -1,11 +1,12 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use crate::adapter::{DefaultJsonAdapter, LogAdapter};
 use crate::types::ServiceContext;
 
 /// Configuration for the APM subsystem.
 pub struct ApmConfig {
-    pub service: ServiceContext,
+    pub service: Arc<ServiceContext>,
     pub log_path: PathBuf,
     pub adapter: Box<dyn LogAdapter + Send + Sync>,
     /// Optional header name for cross-service correlation IDs.
@@ -80,7 +81,7 @@ impl ApmConfigBuilder {
 
     pub fn build(self) -> ApmConfig {
         ApmConfig {
-            service: self.service,
+            service: Arc::new(self.service),
             log_path: self
                 .log_path
                 .unwrap_or_else(|| PathBuf::from("apm.ndjson")),

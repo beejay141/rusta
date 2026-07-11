@@ -119,15 +119,15 @@ pub fn expand(_args: TokenStream, input: TokenStream) -> TokenStream {
                         let type_name_str = quote!(#field_ty).to_string();
                         let field_ty2 = field_ty.clone();
                         binding_check_submissions.push(quote! {
-                            ::ravix::inventory::submit!(::ravix::BindingCheck {
+                            ::ravix_di::inventory::submit!(::ravix_di::BindingCheck {
                                 type_name: #type_name_str,
-                                check: |c: &::ravix::Container| {
+                                check: |c: &::ravix_di::Container| {
                                     if c.has_binding::<#field_ty2>() {
                                         ::std::result::Result::Ok(())
                                     } else {
                                         ::std::result::Result::Err(
                                             ::std::format!(
-                                                "[ravix] Required binding missing for `{}`",
+                                                "[ravix-di] Required binding missing for `{}`",
                                                 #type_name_str,
                                             )
                                         )

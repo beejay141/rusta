@@ -1,52 +1,89 @@
 use std::cell::Cell;
-use std::sync::Arc;
 use std::future::Future;
+use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 use crate::adapter::LogAdapter;
 use crate::config::ApmConfig;
-use crate::context::{ActiveTransaction, CURRENT_TXN, CURRENT_SPAN_ID};
+use crate::context::{ActiveTransaction, CURRENT_SPAN_ID, CURRENT_TXN};
 use crate::span::SpanHandle;
 use crate::transaction::TransactionHandle;
 use crate::types::{ApmEntry, Metadata, ServiceContext};
-use crate::writer::ApmWriter;
+use crate::writer::{ApmWriter, ApmWriterHandle};
 
 /// Global singleton holding the APM writer, adapter, and service metadata.
 struct ApmInner {
-    service: ServiceContext,
+    service: Arc<ServiceContext>,
     writer: ApmWriter,
     adapter: Box<dyn LogAdapter + Send + Sync>,
     correlation_id_header: Option<String>,
 }
 
 static APM_INNER: std::sync::OnceLock<ApmInner> = std::sync::OnceLock::new();
+static SHUTDOWN_HANDLE: Mutex<Option<ApmWriterHandle>> = Mutex::new(None);
 
 pub(crate) fn send_entry(mut entry: ApmEntry) {
     if let Some(inner) = APM_INNER.get() {
         // Stamp service context on transaction records.
         if let ApmEntry::Transaction(ref mut t) = entry {
-            t.service = inner.service.clone();
+            t.service = Arc::clone(&inner.service);
         }
         let line = inner.adapter.format(&entry);
         inner.writer.write_line(line);
     }
 }
 
-/// Stateless entry-point for the APM subsystem.
+/// The application APM tracer.
 ///
-/// Call [`Apm::configure`] once at startup, then use the transaction and span
-/// APIs to instrument your application.
+/// All instances are cheap, zero-sized handles to the same global state
+/// (configured once via [`Apm::configure`]). The `configure` method
+/// returns `Arc<Self>` for direct registration in a DI container.
+///
+/// # Architecture
+///
+/// - Transactions represent entire HTTP requests (e.g., `GET /users`)
+/// - Spans represent operations within a transaction (e.g., DB queries)
+/// - Both are written to NDJSON files for ingestion by APM backends
+///
+/// # Example
+/// ```ignore
+/// use ravix_apm::{Apm, config};
+///
+/// // At startup:
+/// let apm = Apm::configure(config()...build()).await;
+/// container.register(apm);       // register as Arc<Apm>
+/// ```
+#[derive(Clone, Debug)]
 pub struct Apm;
 
 impl Apm {
+    /// Create a new APM handle.
+    ///
+    /// The handle is a zero-sized token; all instances delegate to the same
+    /// global state. Returns `Arc<Self>` for direct registration in a DI container.
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self)
+    }
+
     /// Initialise the APM subsystem.
     ///
     /// Opens the NDJSON log file and spawns the background writer task.
     /// Panics if called more than once or if the file cannot be opened.
-    pub async fn configure(config: ApmConfig) {
-        let writer = ApmWriter::new(&config.log_path)
+    /// Returns `Arc<Self>` for direct registration in a DI container.
+    ///
+    /// # Configuration
+    ///
+    /// Use [`config()`] to create a builder with these options:
+    /// - `service_name()` - Required: your service identifier
+    /// - `service_version()` - Optional: version string
+    /// - `environment()` - Optional: "production", "development", etc.
+    /// - `log_path()` - Optional: defaults to "apm.ndjson"
+    /// - `correlation_id_header()` - Optional: header for request tracing
+    pub async fn configure(config: ApmConfig) -> Arc<Self> {
+        let handle = ApmWriterHandle::new(&config.log_path)
             .await
             .expect("ravix-apm: failed to open APM log file");
+        let writer = handle.writer();
         let inner = ApmInner {
             service: config.service,
             writer,
@@ -57,6 +94,12 @@ impl Apm {
             .set(inner)
             .ok()
             .expect("ravix-apm: Apm::configure already called");
+
+        let mut guard = SHUTDOWN_HANDLE.lock().unwrap();
+        assert!(guard.is_none(), "ravix-apm: SHUTDOWN_HANDLE already set");
+        *guard = Some(handle);
+
+        Arc::new(Self)
     }
 
     /// Retrieve the configured correlation-id header name, if any.
@@ -64,6 +107,17 @@ impl Apm {
         APM_INNER
             .get()
             .and_then(|inner| inner.correlation_id_header.as_deref())
+    }
+
+    /// Gracefully shut down the APM writer, draining pending entries.
+    pub async fn shutdown() {
+        let handle = {
+            let mut guard = SHUTDOWN_HANDLE.lock().unwrap();
+            guard.take()
+        };
+        if let Some(handle) = handle {
+            handle.shutdown().await;
+        }
     }
 
     // ── Transaction API ──────────────────────────────────────────────────
@@ -110,9 +164,11 @@ impl Apm {
                 .extend(meta);
         }
         let handle = TransactionHandle::new(txn.clone(), txn_type.to_string());
-        let result = CURRENT_TXN.scope(txn.clone(), async {
-            CURRENT_SPAN_ID.scope(Cell::new(Uuid::nil()), f()).await
-        }).await;
+        let result = CURRENT_TXN
+            .scope(txn.clone(), async {
+                CURRENT_SPAN_ID.scope(Cell::new(Uuid::nil()), f()).await
+            })
+            .await;
         handle.end(None, None);
         result
     }
@@ -136,9 +192,11 @@ impl Apm {
                 .extend(meta);
         }
         let handle = TransactionHandle::new(txn.clone(), txn_type.to_string());
-        let result = CURRENT_TXN.scope(txn.clone(), async {
-            CURRENT_SPAN_ID.scope(Cell::new(Uuid::nil()), fut).await
-        }).await;
+        let result = CURRENT_TXN
+            .scope(txn.clone(), async {
+                CURRENT_SPAN_ID.scope(Cell::new(Uuid::nil()), fut).await
+            })
+            .await;
         handle.end(None, None);
         result
     }
@@ -149,11 +207,7 @@ impl Apm {
     ///
     /// Returns a no-op handle (and logs a warning) when called outside an
     /// active transaction.
-    pub fn start_span(
-        name: &str,
-        span_type: &str,
-        metadata: Option<Metadata>,
-    ) -> SpanHandle {
+    pub fn start_span(name: &str, span_type: &str, metadata: Option<Metadata>) -> SpanHandle {
         match CURRENT_TXN.try_with(|t| t.clone()) {
             Ok(txn) => {
                 let parent_id = CURRENT_SPAN_ID.try_with(|id| id.get()).ok();
@@ -227,10 +281,20 @@ impl Apm {
         F: Future + Send,
     {
         match ctx {
-            Some(txn) => CURRENT_TXN.scope(txn, async {
-                CURRENT_SPAN_ID.scope(Cell::new(Uuid::nil()), fut).await
-            }).await,
+            Some(txn) => {
+                CURRENT_TXN
+                    .scope(txn, async {
+                        CURRENT_SPAN_ID.scope(Cell::new(Uuid::nil()), fut).await
+                    })
+                    .await
+            }
             None => fut.await,
         }
+    }
+}
+
+impl Default for Apm {
+    fn default() -> Self {
+        Self
     }
 }

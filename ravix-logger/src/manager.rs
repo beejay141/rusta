@@ -71,17 +71,22 @@ pub(crate) fn dispatch(entry: &LogEntry) {
 /// The application logger.
 ///
 /// All instances are cheap, zero-sized handles to the same global state
-/// (configured once via [`Logger::configure`]).  Create an instance with
-/// [`Logger::new`] and share it via `Arc<Logger>` in your DI container.
+/// (configured once via [`Logger::configure`]). The `configure` method
+/// returns `Arc<Logger>` for direct registration in a DI container.
 ///
+/// # Architecture
+///
+/// - Multiple log classifications can write to separate files
+/// - Correlation IDs propagate automatically via middleware
+/// - Lock-free on the hot path for performance
+/// - Graceful shutdown drains pending entries
+///
+/// # Example
 /// ```ignore
 /// use ravix_logger::{Logger, config};
 ///
 /// // At startup:
-/// Logger::configure(config()...build()).await;
-///
-/// // For DI:
-/// let logger = Logger::new();       // returns Arc<Logger>
+/// let logger = Logger::configure(config()...build()).await;
 /// container.register(logger);       // register as Arc<Logger>
 /// ```
 #[derive(Clone, Debug)]
@@ -93,6 +98,9 @@ impl Logger {
     /// The handle is a zero-sized token; all instances delegate to the same
     /// global state.  Returns `Arc<Self>` for direct registration in a DI
     /// container.
+    ///
+    /// Note: Typically you'll use [`Logger::configure`] which returns an
+    /// `Arc<Logger>` directly, making this method unnecessary for most use cases.
     pub fn new() -> Arc<Self> {
         Arc::new(Self)
     }
@@ -101,21 +109,31 @@ impl Logger {
     ///
     /// Opens all classification files and spawns background writer tasks.
     /// Panics if called more than once or if any file cannot be opened.
-    pub async fn configure(config: LoggerConfig) {
+    /// Returns `Arc<Logger>` for direct registration in a DI container.
+    ///
+    /// # Configuration
+    ///
+    /// Use [`config()`] to create a builder with these options:
+    /// - `service_name()` - Required: your service identifier
+    /// - `service_version()` - Optional: version string
+    /// - `environment()` - Optional: "production", "development", etc.
+    /// - `min_level()` - Optional: minimum log level (default: Info)
+    /// - `add_classification(name, path)` - Add log file for classification
+    /// - `default_classification()` - Optional: default classification (default: "PUBLIC")
+    /// - `correlation_id_header()` - Optional: header for request tracing
+    pub async fn configure(config: LoggerConfig) -> Arc<Self> {
         let mut writers: HashMap<Arc<str>, LogWriter> = HashMap::new();
         let mut handles: Vec<LogWriterHandle> = Vec::with_capacity(config.classifications.len());
 
         for c in &config.classifications {
-            let handle = LogWriterHandle::new(&c.log_path)
-                .await
-                .unwrap_or_else(|e| {
-                    panic!(
-                        "ravix-logger: failed to open log file '{}' for classification '{}': {}",
-                        c.log_path.display(),
-                        c.name,
-                        e
-                    )
-                });
+            let handle = LogWriterHandle::new(&c.log_path).await.unwrap_or_else(|e| {
+                panic!(
+                    "ravix-logger: failed to open log file '{}' for classification '{}': {}",
+                    c.log_path.display(),
+                    c.name,
+                    e
+                )
+            });
             writers.insert(Arc::from(c.name.as_str()), handle.writer());
             handles.push(handle);
         }
@@ -144,6 +162,8 @@ impl Logger {
             "ravix-logger: SHUTDOWN_HANDLES already set"
         );
         *guard = Some(handles);
+
+        Arc::new(Self)
     }
 
     // ── Logging methods ───────────────────────────────────────────────────

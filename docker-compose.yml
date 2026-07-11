@@ -1,0 +1,80 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: blog-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ping:1})"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  blog-api:
+    build:
+      context: .
+      dockerfile: ravix-example/Dockerfile
+    container_name: blog-api
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB=blog
+      - JWT_SECRET=change_me_in_production
+      - JWT_EXPIRY_SECONDS=3600
+      - SERVER_PORT=0.0.0.0:3001
+    volumes:
+      - ./apm.ndjson:/app/apm.ndjson
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.14.0
+    container_name: blog-filebeat
+    user: root
+    volumes:
+      - ./apm.ndjson:/logs/apm.ndjson:ro
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - filebeat_data:/usr/share/filebeat/data
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - blog-api
+    profiles:
+      - elk
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+    container_name: blog-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    profiles:
+      - elk
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.14.0
+    container_name: blog-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.synthetics.enabled=false
+      - xpack.fleet.enabled=false
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    profiles:
+      - elk
+
+volumes:
+  mongo_data:
+  filebeat_data:
+  es_data:

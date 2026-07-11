@@ -4,9 +4,10 @@ use std::sync::Arc;
 use tokio::net::TcpListener;
 
 use crate::{
-    container::ContainerRef, middleware::CorsConfig, middleware::MiddlewareChain,
+    middleware::CorsConfig, middleware::MiddlewareChain,
     router::RouterBuilder,
 };
+use ravix_di::ContainerRef;
 
 /// Top-level application builder.
 ///
@@ -41,7 +42,7 @@ impl App {
     }
 
     /// Wrap a [`Container`] in an `Arc` and attach it to the application.
-    pub fn container(mut self, container: crate::container::Container) -> Self {
+    pub fn container(mut self, container: ravix_di::Container) -> Self {
         self.container = Some(std::sync::Arc::new(container));
         self
     }

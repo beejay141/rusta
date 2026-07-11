@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use std::sync::Arc;
+
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use uuid::Uuid;
 
 pub type Metadata = HashMap<String, serde_json::Value>;
@@ -15,6 +17,17 @@ pub struct ServiceContext {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub server_name: Option<String>,
 }
+
+// ── Serialize helpers for Arc-wrapped types ────────────────────────────────
+
+fn serialize_arc_service_context<S: Serializer>(
+    x: &Arc<ServiceContext>,
+    s: S,
+) -> Result<S::Ok, S::Error> {
+    x.as_ref().serialize(s)
+}
+
+// ───────────────────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TransactionRecord {
@@ -31,7 +44,8 @@ pub struct TransactionRecord {
     pub correlation_id: Option<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub metadata: Metadata,
-    pub service: ServiceContext,
+    #[serde(serialize_with = "serialize_arc_service_context")]
+    pub service: Arc<ServiceContext>,
 }
 
 #[derive(Debug, Clone, Serialize)]
