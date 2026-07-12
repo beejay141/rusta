@@ -1,0 +1,459 @@
+{
+  "info": {
+    "name": "Blog API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for testing the Rusta Blog API example service. A blog API with JWT authentication, posts, and comments.",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "postId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "commentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": [
+            {
+              "name": "Successful Registration",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "Created",
+              "status_code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"token\": \"<jwt_token>\",\n  \"user\": {\n    \"id\": \"<user_id>\",\n    \"username\": \"johndoe\",\n    \"email\": \"john@example.com\",\n    \"created_at\": \"2024-01-01T00:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has token\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.exist;",
+                  "    pm.environment.set(\"authToken\", jsonData.token);",
+                  "    pm.environment.set(\"userId\", jsonData.user.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "List All Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Post by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":id"]
+            },
+            "variable": [
+              {
+                "key": "id",
+                "value": "{{postId}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My First Blog Post\",\n  \"body\": \"This is the content of my first blog post. It can be as long as you want!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has post ID\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.environment.set(\"postId\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Blog Post Title\",\n  \"body\": \"Updated content for the blog post.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":id"]
+            },
+            "variable": [
+              {
+                "key": "id",
+                "value": "{{postId}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":id"]
+            },
+            "variable": [
+              {
+                "key": "id",
+                "value": "{{postId}}"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "List Comments for Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/:post_id/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":post_id", "comments"]
+            },
+            "variable": [
+              {
+                "key": "post_id",
+                "value": "{{postId}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"This is a great post! Thanks for sharing.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/:post_id/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":post_id", "comments"]
+            },
+            "variable": [
+              {
+                "key": "post_id",
+                "value": "{{postId}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has comment ID\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.environment.set(\"commentId\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Updated comment content - I changed my mind!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/:post_id/comments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":post_id", "comments", ":id"]
+            },
+            "variable": [
+              {
+                "key": "post_id",
+                "value": "{{postId}}"
+              },
+              {
+                "key": "id",
+                "value": "{{commentId}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/:post_id/comments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":post_id", "comments", ":id"]
+            },
+            "variable": [
+              {
+                "key": "post_id",
+                "value": "{{postId}}"
+              },
+              {
+                "key": "id",
+                "value": "{{commentId}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Like Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/:post_id/comments/:id/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":post_id", "comments", ":id", "like"]
+            },
+            "variable": [
+              {
+                "key": "post_id",
+                "value": "{{postId}}"
+              },
+              {
+                "key": "id",
+                "value": "{{commentId}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Unlike Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/:post_id/comments/:id/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", ":post_id", "comments", ":id", "like"]
+            },
+            "variable": [
+              {
+                "key": "post_id",
+                "value": "{{postId}}"
+              },
+              {
+                "key": "id",
+                "value": "{{commentId}}"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

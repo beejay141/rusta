@@ -1,4 +1,4 @@
-# Ravix
+# Rusta
 
 A modern Rust API framework built on [axum](https://github.com/tokio-rs/axum) with clean-architecture patterns, proc-macro route registration, and dependency injection.
 
@@ -20,11 +20,11 @@ A modern Rust API framework built on [axum](https://github.com/tokio-rs/axum) wi
 ```toml
 # Cargo.toml
 [dependencies]
-ravix = { path = "ravix" }
+rusta = { path = "rusta" }
 ```
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 use std::sync::Arc;
 
 // Define your controller
@@ -61,18 +61,18 @@ async fn main() {
 ## Architecture
 
 ```
-ravix/
-├── ravix/           # Framework core (re-exports from ravix-di)
-├── ravix-di/        # Dependency injection library
+rusta/
+├── rusta/           # Framework core (re-exports from rusta-di)
+├── rusta-di/        # Dependency injection library
 │   ├── container.rs # DI container, Injectable trait, Inject extractor
 │   ├── handler.rs   # Route descriptor
 │   └── error.rs     # DiError type
-├── ravix-di-macros/ # Proc-macros for DI
+├── rusta-di-macros/ # Proc-macros for DI
 │   ├── injectable.rs # #[injectable] attribute
 │   └── controller.rs # #[controller], #[get], etc.
-├── ravix-apm/       # APM (Application Performance Monitoring)
-├── ravix-logger/    # Structured logging
-└── ravix-example/   # Reference application
+├── rusta-apm/       # APM (Application Performance Monitoring)
+├── rusta-logger/    # Structured logging
+└── rusta-example/   # Reference application
 ```
 
 ## API Reference
@@ -116,7 +116,7 @@ Http::internal_error_with(obj)        // 500 Internal Error with structured erro
 For structured error responses, use `ErrorObject<T>` or `ErrorResponse::object()`:
 
 ```rust
-use ravix::{Http, ErrorObject, ErrorResponse};
+use rusta::{Http, ErrorObject, ErrorResponse};
 
 // Structured error with custom fields
 #[derive(serde::Serialize)]
@@ -139,7 +139,7 @@ if let Err(e) = validator::Validate::validate(&body) {
 Use `MiddlewareChain` to register middleware that applies to all routes:
 
 ```rust
-use ravix::{App, Container, MiddlewareChain, Request, Next, Response};
+use rusta::{App, Container, MiddlewareChain, Request, Next, Response};
 
 // Custom middleware function
 async fn request_id_middleware(request: Request, next: Next) -> Response {
@@ -173,7 +173,7 @@ runs closest to the handler (innermost), the last added layer wraps everything (
 ### Advanced Dependency Injection
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 use std::sync::Arc;
 
 // Optional injection - field becomes None if not registered
@@ -227,7 +227,7 @@ pub async fn get_user(Inject(svc): Inject<Arc<UserService>>) -> Response {
 
 ### Prelude Exports
 
-The `ravix::prelude::*` glob import provides:
+The `rusta::prelude::*` glob import provides:
 
 ```rust
 // HTTP method macros
@@ -245,7 +245,7 @@ Http, Json, Path, Query, State, Body, Request, Response, IntoResponse, StatusCod
 CORS is opt-in and registered globally on the `App` builder. It is applied to every route, including `OPTIONS` preflight requests, before any per-handler middleware runs.
 
 ```rust
-use ravix::{App, Container, CorsConfig};
+use rusta::{App, Container, CorsConfig};
 
 let cors = CorsConfig::builder()
     .allow_origins(vec!["https://app.example.com".to_string()])
@@ -276,18 +276,18 @@ App::new()
 
 ## APM (Application Performance Monitoring)
 
-Ravix includes an APM module for distributed tracing and performance monitoring.
+Rusta includes an APM module for distributed tracing and performance monitoring.
 
 ```toml
 # Cargo.toml
 [dependencies]
-ravix-apm = { path = "ravix-apm" }
+rusta-apm = { path = "rusta-apm" }
 ```
 
 ### Configuration
 
 ```rust
-use ravix_apm::{Apm, config};
+use rusta_apm::{Apm, config};
 
 let apm = Apm::configure(
     config()
@@ -303,7 +303,7 @@ let apm = Apm::configure(
 ### Usage
 
 ```rust
-use ravix_apm::Apm;
+use rusta_apm::Apm;
 
 // Automatic transaction wrapping (via middleware)
 // Each request creates a transaction automatically
@@ -335,13 +335,13 @@ Structured logging with classification-based routing.
 ```toml
 # Cargo.toml
 [dependencies]
-ravix-logger = { path = "ravix-logger" }
+rusta-logger = { path = "rusta-logger" }
 ```
 
 ### Configuration
 
 ```rust
-use ravix_logger::{Logger, config};
+use rusta_logger::{Logger, config};
 
 let logger = Logger::configure(
     config()
@@ -359,7 +359,7 @@ let logger = Logger::configure(
 ### Usage
 
 ```rust
-use ravix_logger::{Logger, LogLevel, LogOptions};
+use rusta_logger::{Logger, LogLevel, LogOptions};
 
 // Simple logging
 Logger::info("User logged in", LogOptions::default());
@@ -394,7 +394,7 @@ cargo check --workspace
 cargo test --workspace
 
 # Run the example
-cargo run -p ravix-example
+cargo run -p rusta-example
 ```
 
 ## License

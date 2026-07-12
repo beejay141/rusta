@@ -10,7 +10,7 @@ filebeat.inputs:
 
 output.elasticsearch:
   hosts: ["${ELASTICSEARCH_URL:http://elasticsearch:9200}"]
-  index: "ravix-apm-%{+yyyy.MM.dd}"
+  index: "rusta-apm-%{+yyyy.MM.dd}"
 
-setup.template.name: "ravix-apm"
-setup.template.pattern: "ravix-apm-*"
+setup.template.name: "rusta-apm"
+setup.template.pattern: "rusta-apm-*"

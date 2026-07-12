@@ -1,4 +1,4 @@
 /target
 *.md
 !README.md
-ravix-docs/node_modules
+**/node_modules
