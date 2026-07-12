@@ -19,6 +19,7 @@ pub struct LoggerConfig {
     pub classifications: Vec<LogClassificationConfig>,
     pub default_classification: String,
     pub correlation_id_header: String,
+    pub channel_capacity: Option<usize>,
     pub adapter: Box<dyn LogAdapter + Send + Sync>,
 }
 
@@ -29,6 +30,7 @@ pub struct LoggerConfigBuilder {
     classifications: Vec<LogClassificationConfig>,
     default_classification: Option<String>,
     correlation_id_header: Option<String>,
+    channel_capacity: Option<usize>,
     adapter: Option<Box<dyn LogAdapter + Send + Sync>>,
 }
 
@@ -46,6 +48,7 @@ impl LoggerConfigBuilder {
             classifications: Vec::new(),
             default_classification: None,
             correlation_id_header: None,
+            channel_capacity: None,
             adapter: None,
         }
     }
@@ -100,13 +103,22 @@ impl LoggerConfigBuilder {
         self
     }
 
+    /// Optional: set the per-writer channel capacity. When not set the
+    /// default capacity is used (8192).
+    pub fn channel_capacity(mut self, capacity: usize) -> Self {
+        self.channel_capacity = Some(capacity);
+        self
+    }
+
     pub fn adapter(mut self, adapter: Box<dyn LogAdapter + Send + Sync>) -> Self {
         self.adapter = Some(adapter);
         self
     }
 
     pub fn build(self) -> LoggerConfig {
-        let default_classification = self.default_classification.unwrap_or_else(|| "PUBLIC".to_string());
+        let default_classification = self
+            .default_classification
+            .unwrap_or_else(|| "PUBLIC".to_string());
 
         assert!(
             !self.service.service_name.is_empty(),
@@ -135,6 +147,7 @@ impl LoggerConfigBuilder {
             correlation_id_header: self
                 .correlation_id_header
                 .unwrap_or_else(|| "X-Correlation-ID".to_string()),
+            channel_capacity: self.channel_capacity,
             adapter: self.adapter.unwrap_or_else(|| Box::new(DefaultJsonAdapter)),
         }
     }

@@ -3,10 +3,7 @@ use std::sync::Arc;
 
 use tokio::net::TcpListener;
 
-use crate::{
-    middleware::CorsConfig, middleware::MiddlewareChain,
-    router::RouterBuilder,
-};
+use crate::{middleware::CorsConfig, middleware::MiddlewareChain, router::RouterBuilder};
 use rusta_di::ContainerRef;
 
 /// Top-level application builder.

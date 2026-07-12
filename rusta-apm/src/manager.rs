@@ -6,11 +6,11 @@ use uuid::Uuid;
 use crate::adapter::LogAdapter;
 use crate::config::ApmConfig;
 use crate::context::{ActiveTransaction, CURRENT_SPAN_ID, CURRENT_TXN};
-use axum::http::HeaderName;
 use crate::span::SpanHandle;
 use crate::transaction::TransactionHandle;
 use crate::types::{ApmEntry, Metadata, ServiceContext};
 use crate::writer::{ApmWriter, ApmWriterHandle};
+use axum::http::HeaderName;
 
 /// Global singleton holding the APM writer, adapter, and service metadata.
 struct ApmInner {
@@ -81,13 +81,14 @@ impl Apm {
     /// - `log_path()` - Optional: defaults to "apm.ndjson"
     /// - `correlation_id_header()` - Optional: header for request tracing
     pub async fn configure(config: ApmConfig) -> Arc<Self> {
-        let handle = ApmWriterHandle::new(&config.log_path)
+        let handle = ApmWriterHandle::new(&config.log_path, config.channel_capacity)
             .await
             .expect("rusta-apm: failed to open APM log file");
         let writer = handle.writer();
-        let parsed_header = config
-            .correlation_id_header
-            .map(|s| s.parse::<HeaderName>().expect("rusta-apm: invalid correlation_id_header"));
+        let parsed_header = config.correlation_id_header.map(|s| {
+            s.parse::<HeaderName>()
+                .expect("rusta-apm: invalid correlation_id_header")
+        });
 
         let inner = ApmInner {
             service: config.service,

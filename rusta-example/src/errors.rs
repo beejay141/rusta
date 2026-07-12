@@ -2,8 +2,8 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Json},
 };
-use rusta::ErrorResponse;
 use bson::document::ValueAccessError;
+use rusta::ErrorResponse;
 
 /// Application-wide error type returned by service methods.
 ///
@@ -54,16 +54,27 @@ impl IntoResponse for AppError {
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, ErrorResponse::message(msg)),
             AppError::NotFoundWith(obj) => (StatusCode::NOT_FOUND, ErrorResponse::object(obj)),
             AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, ErrorResponse::message(msg)),
-            AppError::UnauthorizedWith(obj) => (StatusCode::UNAUTHORIZED, ErrorResponse::object(obj)),
+            AppError::UnauthorizedWith(obj) => {
+                (StatusCode::UNAUTHORIZED, ErrorResponse::object(obj))
+            }
             AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, ErrorResponse::message(msg)),
             AppError::ForbiddenWith(obj) => (StatusCode::FORBIDDEN, ErrorResponse::object(obj)),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, ErrorResponse::message(msg)),
             AppError::BadRequestWith(obj) => (StatusCode::BAD_REQUEST, ErrorResponse::object(obj)),
             AppError::Conflict(msg) => (StatusCode::CONFLICT, ErrorResponse::message(msg)),
             AppError::ConflictWith(obj) => (StatusCode::CONFLICT, ErrorResponse::object(obj)),
-            AppError::DatabaseError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorResponse::message(msg)),
-            AppError::InternalError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorResponse::message(msg)),
-            AppError::InternalErrorWith(obj) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorResponse::object(obj)),
+            AppError::DatabaseError(msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                ErrorResponse::message(msg),
+            ),
+            AppError::InternalError(msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                ErrorResponse::message(msg),
+            ),
+            AppError::InternalErrorWith(obj) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                ErrorResponse::object(obj),
+            ),
         };
         (status, Json(error_response.into_json())).into_response()
     }

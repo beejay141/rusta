@@ -126,14 +126,16 @@ impl Logger {
         let mut handles: Vec<LogWriterHandle> = Vec::with_capacity(config.classifications.len());
 
         for c in &config.classifications {
-            let handle = LogWriterHandle::new(&c.log_path).await.unwrap_or_else(|e| {
-                panic!(
-                    "rusta-logger: failed to open log file '{}' for classification '{}': {}",
-                    c.log_path.display(),
-                    c.name,
-                    e
-                )
-            });
+            let handle = LogWriterHandle::new(&c.log_path, config.channel_capacity)
+                .await
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "rusta-logger: failed to open log file '{}' for classification '{}': {}",
+                        c.log_path.display(),
+                        c.name,
+                        e
+                    )
+                });
             writers.insert(Arc::from(c.name.as_str()), handle.writer());
             handles.push(handle);
         }

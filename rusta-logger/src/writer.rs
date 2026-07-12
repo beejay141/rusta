@@ -1,9 +1,9 @@
 use std::path::Path;
-use tokio::fs;
-use tokio::io::AsyncWriteExt;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
-use tokio::sync::mpsc::{self, Receiver, Sender, error::TrySendError};
+use tokio::fs;
+use tokio::io::AsyncWriteExt;
+use tokio::sync::mpsc::{self, error::TrySendError, Receiver, Sender};
 
 // ── Split design ───────────────────────────────────────────────────────────
 // LogWriter  = cheaply cloneable channel sender (hot path, lock-free)
@@ -47,18 +47,22 @@ pub struct LogWriterHandle {
 
 impl LogWriterHandle {
     /// Open (or create) the log file in append mode and spawn the writer task.
-    pub async fn new(path: impl AsRef<Path>) -> Result<Self, std::io::Error> {
+    pub async fn new(
+        path: impl AsRef<Path>,
+        capacity: Option<usize>,
+    ) -> Result<Self, std::io::Error> {
         let file = fs::OpenOptions::new()
             .create(true)
             .append(true)
             .open(path)
             .await?;
-
         // Bounded channel to protect against unbounded memory growth under
         // sustained backpressure. Try-send is used on the hot path and drops
-        // entries when the buffer is full.
-        const CHANNEL_CAPACITY: usize = 8192;
-        let (sender, receiver) = mpsc::channel(CHANNEL_CAPACITY);
+        // entries when the buffer is full. Use configured capacity when
+        // supplied, otherwise fall back to the default.
+        const DEFAULT_CHANNEL_CAPACITY: usize = 8192;
+        let cap = capacity.unwrap_or(DEFAULT_CHANNEL_CAPACITY);
+        let (sender, receiver) = mpsc::channel(cap);
         let dropped = Arc::new(AtomicUsize::new(0));
         let join_handle = tokio::spawn(writer_loop(file, receiver));
 
@@ -88,10 +92,7 @@ impl LogWriterHandle {
 /// Under concurrent load this limits how many writes get batched.
 const BATCH_SIZE: usize = 64;
 
-async fn writer_loop(
-    mut file: fs::File,
-    mut receiver: Receiver<String>,
-) {
+async fn writer_loop(mut file: fs::File, mut receiver: Receiver<String>) {
     // Pre-allocated buffer to join line + newline into a single write.
     let mut buf = String::with_capacity(4096);
     let mut count: usize = 0;

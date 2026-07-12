@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
-use tokio::sync::mpsc::{self, Receiver, Sender, error::TrySendError};
+use tokio::sync::mpsc::{self, error::TrySendError, Receiver, Sender};
 
 // ── Split design ───────────────────────────────────────────────────────────
 // ApmWriter  = cheaply cloneable channel sender (hot path, lock-free)
@@ -47,15 +47,18 @@ pub struct ApmWriterHandle {
 
 impl ApmWriterHandle {
     /// Open (or create) the log file in append mode and spawn the writer task.
-    pub async fn new(path: impl AsRef<Path>) -> Result<Self, std::io::Error> {
+    pub async fn new(
+        path: impl AsRef<Path>,
+        capacity: Option<usize>,
+    ) -> Result<Self, std::io::Error> {
         let file = fs::OpenOptions::new()
             .create(true)
             .append(true)
             .open(path)
             .await?;
-
-        const CHANNEL_CAPACITY: usize = 8192;
-        let (sender, receiver) = mpsc::channel(CHANNEL_CAPACITY);
+        const DEFAULT_CHANNEL_CAPACITY: usize = 8192;
+        let cap = capacity.unwrap_or(DEFAULT_CHANNEL_CAPACITY);
+        let (sender, receiver) = mpsc::channel(cap);
         let dropped = Arc::new(AtomicUsize::new(0));
         let join_handle = tokio::spawn(writer_loop(file, receiver));
 

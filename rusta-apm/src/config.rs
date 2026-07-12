@@ -16,6 +16,9 @@ pub struct ApmConfig {
     /// it back in the response header. When `None`, no correlation-id
     /// handling is performed.
     pub correlation_id_header: Option<String>,
+    /// Optional channel capacity for the APM writer. When `None`, a sane
+    /// default is used (8192).
+    pub channel_capacity: Option<usize>,
 }
 
 /// Fluent builder for [`ApmConfig`].
@@ -24,6 +27,7 @@ pub struct ApmConfigBuilder {
     log_path: Option<PathBuf>,
     adapter: Option<Box<dyn LogAdapter + Send + Sync>>,
     correlation_id_header: Option<String>,
+    channel_capacity: Option<usize>,
 }
 
 impl ApmConfigBuilder {
@@ -39,6 +43,7 @@ impl ApmConfigBuilder {
             log_path: None,
             adapter: None,
             correlation_id_header: None,
+            channel_capacity: None,
         }
     }
 
@@ -88,14 +93,20 @@ impl ApmConfigBuilder {
         self
     }
 
+    /// Optional: set the APM writer channel capacity. When not set the
+    /// default capacity is used (8192).
+    pub fn channel_capacity(mut self, capacity: usize) -> Self {
+        self.channel_capacity = Some(capacity);
+        self
+    }
+
     pub fn build(self) -> ApmConfig {
         ApmConfig {
             service: Arc::new(self.service),
-            log_path: self
-                .log_path
-                .unwrap_or_else(|| PathBuf::from("apm.ndjson")),
+            log_path: self.log_path.unwrap_or_else(|| PathBuf::from("apm.ndjson")),
             adapter: self.adapter.unwrap_or_else(|| Box::new(DefaultJsonAdapter)),
             correlation_id_header: self.correlation_id_header,
+            channel_capacity: self.channel_capacity,
         }
     }
 }

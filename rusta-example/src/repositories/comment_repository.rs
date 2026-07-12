@@ -2,10 +2,10 @@ use async_trait::async_trait;
 use bson::{doc, oid::ObjectId, Document};
 use chrono::Utc;
 use futures::TryStreamExt;
-use std::sync::Arc;
 use mongodb::Database;
 use rusta::injectable;
 use serde_json::json;
+use std::sync::Arc;
 
 use crate::errors::AppError;
 use crate::models::comment::{Comment, CreateCommentDto, UpdateCommentDto};
@@ -65,50 +65,52 @@ pub struct MongoCommentRepository {
 #[async_trait]
 impl CommentRepository for MongoCommentRepository {
     async fn find_by_post(&self, post_id: &str) -> Result<Vec<Comment>, AppError> {
-        self.apm.wrap_span_future(
-            "mongo.comments.find",
-            "db",
-            Some(
-                [
-                    ("collection".into(), json!("comments")),
-                    ("op".into(), json!("find")),
-                    ("post_id".into(), json!(post_id)),
-                ]
-                .into(),
-            ),
-            async {
-                let coll = self.db.collection::<Document>("comments");
-                let cursor = coll.find(doc! { "post_id": post_id }).await?;
-                let docs: Vec<Document> = cursor.try_collect().await?;
-                docs.into_iter().map(doc_to_comment).collect()
-            },
-        )
-        .await
+        self.apm
+            .wrap_span_future(
+                "mongo.comments.find",
+                "db",
+                Some(
+                    [
+                        ("collection".into(), json!("comments")),
+                        ("op".into(), json!("find")),
+                        ("post_id".into(), json!(post_id)),
+                    ]
+                    .into(),
+                ),
+                async {
+                    let coll = self.db.collection::<Document>("comments");
+                    let cursor = coll.find(doc! { "post_id": post_id }).await?;
+                    let docs: Vec<Document> = cursor.try_collect().await?;
+                    docs.into_iter().map(doc_to_comment).collect()
+                },
+            )
+            .await
     }
 
     async fn find_by_id(&self, id: &str) -> Result<Option<Comment>, AppError> {
-        self.apm.wrap_span_future(
-            "mongo.comments.find_one",
-            "db",
-            Some(
-                [
-                    ("collection".into(), json!("comments")),
-                    ("op".into(), json!("find_one")),
-                    ("id".into(), json!(id)),
-                ]
-                .into(),
-            ),
-            async {
-                let oid = ObjectId::parse_str(id)
-                    .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
-                let coll = self.db.collection::<Document>("comments");
-                coll.find_one(doc! { "_id": oid })
-                    .await?
-                    .map(doc_to_comment)
-                    .transpose()
-            },
-        )
-        .await
+        self.apm
+            .wrap_span_future(
+                "mongo.comments.find_one",
+                "db",
+                Some(
+                    [
+                        ("collection".into(), json!("comments")),
+                        ("op".into(), json!("find_one")),
+                        ("id".into(), json!(id)),
+                    ]
+                    .into(),
+                ),
+                async {
+                    let oid = ObjectId::parse_str(id)
+                        .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
+                    let coll = self.db.collection::<Document>("comments");
+                    coll.find_one(doc! { "_id": oid })
+                        .await?
+                        .map(doc_to_comment)
+                        .transpose()
+                },
+            )
+            .await
     }
 
     async fn save(
@@ -117,46 +119,46 @@ impl CommentRepository for MongoCommentRepository {
         author_id: &str,
         dto: CreateCommentDto,
     ) -> Result<Comment, AppError> {
-        self.apm.wrap_span_future(
-            "mongo.comments.insert_one",
-            "db",
-            Some(
-                [
-                    ("collection".into(), json!("comments")),
-                    ("op".into(), json!("insert_one")),
-                ]
-                .into(),
-            ),
-            async {
-                let now = Utc::now();
-                let coll = self.db.collection::<Document>("comments");
-                let doc = doc! {
-                    "post_id": post_id,
-                    "author_id": author_id,
-                    "body": &dto.body,
-                    "like_count": 0_i64,
-                    "liked_by": [],
-                    "created_at": bson::DateTime::from_chrono(now),
-                    "updated_at": bson::DateTime::from_chrono(now),
-                };
-                let result = coll.insert_one(doc).await?;
-                let oid = result
-                    .inserted_id
-                    .as_object_id()
-                    .ok_or_else(|| AppError::InternalError("Failed to get inserted id".into()))?;
-                Ok(Comment {
-                    id: oid.to_hex(),
-                    post_id: post_id.to_string(),
-                    author_id: author_id.to_string(),
-                    body: dto.body,
-                    like_count: 0,
-                    liked_by: vec![],
-                    created_at: now,
-                    updated_at: now,
-                })
-            },
-        )
-        .await
+        self.apm
+            .wrap_span_future(
+                "mongo.comments.insert_one",
+                "db",
+                Some(
+                    [
+                        ("collection".into(), json!("comments")),
+                        ("op".into(), json!("insert_one")),
+                    ]
+                    .into(),
+                ),
+                async {
+                    let now = Utc::now();
+                    let coll = self.db.collection::<Document>("comments");
+                    let doc = doc! {
+                        "post_id": post_id,
+                        "author_id": author_id,
+                        "body": &dto.body,
+                        "like_count": 0_i64,
+                        "liked_by": [],
+                        "created_at": bson::DateTime::from_chrono(now),
+                        "updated_at": bson::DateTime::from_chrono(now),
+                    };
+                    let result = coll.insert_one(doc).await?;
+                    let oid = result.inserted_id.as_object_id().ok_or_else(|| {
+                        AppError::InternalError("Failed to get inserted id".into())
+                    })?;
+                    Ok(Comment {
+                        id: oid.to_hex(),
+                        post_id: post_id.to_string(),
+                        author_id: author_id.to_string(),
+                        body: dto.body,
+                        like_count: 0,
+                        liked_by: vec![],
+                        created_at: now,
+                        updated_at: now,
+                    })
+                },
+            )
+            .await
     }
 
     async fn update(
@@ -165,149 +167,153 @@ impl CommentRepository for MongoCommentRepository {
         author_id: &str,
         dto: UpdateCommentDto,
     ) -> Result<Option<Comment>, AppError> {
-        self.apm.wrap_span_future(
-            "mongo.comments.update_one",
-            "db",
-            Some(
-                [
-                    ("collection".into(), json!("comments")),
-                    ("op".into(), json!("update_one")),
-                    ("id".into(), json!(id)),
-                ]
-                .into(),
-            ),
-            async {
-                let oid = ObjectId::parse_str(id)
-                    .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
-                let coll = self.db.collection::<Document>("comments");
+        self.apm
+            .wrap_span_future(
+                "mongo.comments.update_one",
+                "db",
+                Some(
+                    [
+                        ("collection".into(), json!("comments")),
+                        ("op".into(), json!("update_one")),
+                        ("id".into(), json!(id)),
+                    ]
+                    .into(),
+                ),
+                async {
+                    let oid = ObjectId::parse_str(id)
+                        .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
+                    let coll = self.db.collection::<Document>("comments");
 
-                let result = coll
-                    .update_one(
-                        doc! { "_id": oid, "author_id": author_id },
-                        doc! { "$set": {
-                            "body": &dto.body,
-                            "updated_at": bson::DateTime::from_chrono(Utc::now()),
-                        }},
-                    )
-                    .await?;
+                    let result = coll
+                        .update_one(
+                            doc! { "_id": oid, "author_id": author_id },
+                            doc! { "$set": {
+                                "body": &dto.body,
+                                "updated_at": bson::DateTime::from_chrono(Utc::now()),
+                            }},
+                        )
+                        .await?;
 
-                if result.matched_count == 0 {
-                    return Ok(None);
-                }
+                    if result.matched_count == 0 {
+                        return Ok(None);
+                    }
 
-                coll.find_one(doc! { "_id": oid })
-                    .await?
-                    .map(doc_to_comment)
-                    .transpose()
-            },
-        )
-        .await
+                    coll.find_one(doc! { "_id": oid })
+                        .await?
+                        .map(doc_to_comment)
+                        .transpose()
+                },
+            )
+            .await
     }
 
     async fn delete(&self, id: &str, author_id: &str) -> Result<bool, AppError> {
-        self.apm.wrap_span_future(
-            "mongo.comments.delete_one",
-            "db",
-            Some(
-                [
-                    ("collection".into(), json!("comments")),
-                    ("op".into(), json!("delete_one")),
-                    ("id".into(), json!(id)),
-                ]
-                .into(),
-            ),
-            async {
-                let oid = ObjectId::parse_str(id)
-                    .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
-                let coll = self.db.collection::<Document>("comments");
-                let result = coll
-                    .delete_one(doc! { "_id": oid, "author_id": author_id })
-                    .await?;
-                Ok(result.deleted_count > 0)
-            },
-        )
-        .await
+        self.apm
+            .wrap_span_future(
+                "mongo.comments.delete_one",
+                "db",
+                Some(
+                    [
+                        ("collection".into(), json!("comments")),
+                        ("op".into(), json!("delete_one")),
+                        ("id".into(), json!(id)),
+                    ]
+                    .into(),
+                ),
+                async {
+                    let oid = ObjectId::parse_str(id)
+                        .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
+                    let coll = self.db.collection::<Document>("comments");
+                    let result = coll
+                        .delete_one(doc! { "_id": oid, "author_id": author_id })
+                        .await?;
+                    Ok(result.deleted_count > 0)
+                },
+            )
+            .await
     }
 
     async fn add_like(&self, id: &str, user_id: &str) -> Result<Option<Comment>, AppError> {
-        self.apm.wrap_span_future(
-            "mongo.comments.add_like",
-            "db",
-            Some(
-                [
-                    ("collection".into(), json!("comments")),
-                    ("op".into(), json!("update_one")),
-                    ("id".into(), json!(id)),
-                    ("user_id".into(), json!(user_id)),
-                ]
-                .into(),
-            ),
-            async {
-                let oid = ObjectId::parse_str(id)
-                    .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
-                let coll = self.db.collection::<Document>("comments");
+        self.apm
+            .wrap_span_future(
+                "mongo.comments.add_like",
+                "db",
+                Some(
+                    [
+                        ("collection".into(), json!("comments")),
+                        ("op".into(), json!("update_one")),
+                        ("id".into(), json!(id)),
+                        ("user_id".into(), json!(user_id)),
+                    ]
+                    .into(),
+                ),
+                async {
+                    let oid = ObjectId::parse_str(id)
+                        .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
+                    let coll = self.db.collection::<Document>("comments");
 
-                let result = coll
-                    .update_one(
-                        doc! { "_id": oid },
-                        doc! {
-                            "$addToSet": { "liked_by": user_id },
-                            "$inc": { "like_count": 1 },
-                        },
-                    )
-                    .await?;
+                    let result = coll
+                        .update_one(
+                            doc! { "_id": oid },
+                            doc! {
+                                "$addToSet": { "liked_by": user_id },
+                                "$inc": { "like_count": 1 },
+                            },
+                        )
+                        .await?;
 
-                if result.matched_count == 0 {
-                    return Ok(None);
-                }
+                    if result.matched_count == 0 {
+                        return Ok(None);
+                    }
 
-                coll.find_one(doc! { "_id": oid })
-                    .await?
-                    .map(doc_to_comment)
-                    .transpose()
-            },
-        )
-        .await
+                    coll.find_one(doc! { "_id": oid })
+                        .await?
+                        .map(doc_to_comment)
+                        .transpose()
+                },
+            )
+            .await
     }
 
     async fn remove_like(&self, id: &str, user_id: &str) -> Result<Option<Comment>, AppError> {
-        self.apm.wrap_span_future(
-            "mongo.comments.remove_like",
-            "db",
-            Some(
-                [
-                    ("collection".into(), json!("comments")),
-                    ("op".into(), json!("update_one")),
-                    ("id".into(), json!(id)),
-                    ("user_id".into(), json!(user_id)),
-                ]
-                .into(),
-            ),
-            async {
-                let oid = ObjectId::parse_str(id)
-                    .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
-                let coll = self.db.collection::<Document>("comments");
+        self.apm
+            .wrap_span_future(
+                "mongo.comments.remove_like",
+                "db",
+                Some(
+                    [
+                        ("collection".into(), json!("comments")),
+                        ("op".into(), json!("update_one")),
+                        ("id".into(), json!(id)),
+                        ("user_id".into(), json!(user_id)),
+                    ]
+                    .into(),
+                ),
+                async {
+                    let oid = ObjectId::parse_str(id)
+                        .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
+                    let coll = self.db.collection::<Document>("comments");
 
-                let result = coll
-                    .update_one(
-                        doc! { "_id": oid },
-                        doc! {
-                            "$pull": { "liked_by": user_id },
-                            "$inc": { "like_count": -1 },
-                        },
-                    )
-                    .await?;
+                    let result = coll
+                        .update_one(
+                            doc! { "_id": oid },
+                            doc! {
+                                "$pull": { "liked_by": user_id },
+                                "$inc": { "like_count": -1 },
+                            },
+                        )
+                        .await?;
 
-                if result.matched_count == 0 {
-                    return Ok(None);
-                }
+                    if result.matched_count == 0 {
+                        return Ok(None);
+                    }
 
-                coll.find_one(doc! { "_id": oid })
-                    .await?
-                    .map(doc_to_comment)
-                    .transpose()
-            },
-        )
-        .await
+                    coll.find_one(doc! { "_id": oid })
+                        .await?
+                        .map(doc_to_comment)
+                        .transpose()
+                },
+            )
+            .await
     }
 }

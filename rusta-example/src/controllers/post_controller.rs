@@ -23,7 +23,8 @@ impl PostController {
     pub async fn list_posts(&self) -> Response {
         match self.svc.list().await {
             Ok(posts) => {
-                self.logger.info(format!("Listed {} posts", posts.len()), None);
+                self.logger
+                    .info(format!("Listed {} posts", posts.len()), None);
                 Http::json(posts)
             }
             Err(e) => e.into_response(),

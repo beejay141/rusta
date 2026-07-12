@@ -1,7 +1,7 @@
+use chrono::{DateTime, Utc};
 use std::cell::Cell;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
-use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::types::Metadata;

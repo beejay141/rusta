@@ -1,11 +1,11 @@
+use chrono::{DateTime, Utc};
 use std::sync::Arc;
 use std::time::Instant;
-use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::context::{ActiveTransaction, CURRENT_SPAN_ID};
-use crate::types::{Metadata, SpanRecord};
 use crate::manager::send_entry;
+use crate::types::{Metadata, SpanRecord};
 
 /// Handle for an in-flight span.
 ///
@@ -79,7 +79,9 @@ impl SpanHandle {
     }
 
     fn finalise(&mut self, metadata: Option<Metadata>) {
-        let Some(ref mut inner) = self.inner else { return };
+        let Some(ref mut inner) = self.inner else {
+            return;
+        };
         if inner.ended {
             return;
         }

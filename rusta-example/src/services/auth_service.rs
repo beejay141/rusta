@@ -127,7 +127,9 @@ impl AuthService {
             .await?
             .ok_or_else(|| AppError::Unauthorized("Invalid email or password".into()))?;
 
-        let valid = self.verify_password(&dto.password, &user.password_hash).await?;
+        let valid = self
+            .verify_password(&dto.password, &user.password_hash)
+            .await?;
         if !valid {
             return Err(AppError::Unauthorized("Invalid email or password".into()));
         }
@@ -152,55 +154,55 @@ impl AuthService {
     }
 
     async fn hash_password(&self, password: &str) -> Result<String, AppError> {
-    let span = self.apm.start_span("argon2.hash", "app", None);
-    let password = password.to_string();
+        let span = self.apm.start_span("argon2.hash", "app", None);
+        let password = password.to_string();
 
-    let result = tokio::task::spawn_blocking(move || {
-        use argon2::{
-            password_hash::{PasswordHasher, SaltString},
-            Argon2,
-        };
-        use rand::rngs::OsRng;
-        let salt = SaltString::generate(&mut OsRng);
-        Argon2::default()
-            .hash_password(password.as_bytes(), &salt)
-            .map(|h| h.to_string())
-    })
-    .await
-    .map_err(|_| {
-        self.logger.error("Password hash task panicked", None);
+        let result = tokio::task::spawn_blocking(move || {
+            use argon2::{
+                password_hash::{PasswordHasher, SaltString},
+                Argon2,
+            };
+            use rand::rngs::OsRng;
+            let salt = SaltString::generate(&mut OsRng);
+            Argon2::default()
+                .hash_password(password.as_bytes(), &salt)
+                .map(|h| h.to_string())
+        })
+        .await
+        .map_err(|_| {
+            self.logger.error("Password hash task panicked", None);
 
-        AppError::InternalError("hash task panicked".into())
-    })?;
+            AppError::InternalError("hash task panicked".into())
+        })?;
 
-    span.end(None);
-    result.map_err(|e| AppError::InternalError(format!("argon2 hash error: {}", e)))
-}
+        span.end(None);
+        result.map_err(|e| AppError::InternalError(format!("argon2 hash error: {}", e)))
+    }
 
     async fn verify_password(&self, password: &str, hash: &str) -> Result<bool, AppError> {
-    let password = password.to_string();
-    let hash = hash.to_string();
-    let span = self.apm.start_span("argon2.verify", "app", None);
-    let result = tokio::task::spawn_blocking(move || {
-        use argon2::{
-            password_hash::{PasswordHash, PasswordVerifier},
-            Argon2,
-        };
-        let parsed = PasswordHash::new(&hash)
-            .map_err(|e| AppError::InternalError(format!("invalid hash: {}", e)))?;
-        Argon2::default()
-            .verify_password(password.as_bytes(), &parsed)
-            .map(|_| true)
-            .or_else(|_| Ok(false))
-    })
-    .await
-    .map_err(|_| {
-        self.logger.error("Password verify task panicked", None);
+        let password = password.to_string();
+        let hash = hash.to_string();
+        let span = self.apm.start_span("argon2.verify", "app", None);
+        let result = tokio::task::spawn_blocking(move || {
+            use argon2::{
+                password_hash::{PasswordHash, PasswordVerifier},
+                Argon2,
+            };
+            let parsed = PasswordHash::new(&hash)
+                .map_err(|e| AppError::InternalError(format!("invalid hash: {}", e)))?;
+            Argon2::default()
+                .verify_password(password.as_bytes(), &parsed)
+                .map(|_| true)
+                .or_else(|_| Ok(false))
+        })
+        .await
+        .map_err(|_| {
+            self.logger.error("Password verify task panicked", None);
 
-        AppError::InternalError("verify task panicked".into())
-    })?;
-    
-    span.end(None);
-    result
-}
+            AppError::InternalError("verify task panicked".into())
+        })?;
+
+        span.end(None);
+        result
+    }
 }
