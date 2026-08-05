@@ -91,3 +91,34 @@ impl From<ValueAccessError> for AppError {
         AppError::InternalError(format!("BSON field access error: {}", e))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::response::IntoResponse;
+
+    #[tokio::test]
+    async fn exercise_app_error_variants() {
+        let variants = vec![
+            AppError::NotFound("x".into()),
+            AppError::NotFoundWith(serde_json::json!({ "k": "v" })),
+            AppError::Unauthorized("x".into()),
+            AppError::UnauthorizedWith(serde_json::json!({})),
+            AppError::Forbidden("x".into()),
+            AppError::ForbiddenWith(serde_json::json!({})),
+            AppError::BadRequest("x".into()),
+            AppError::BadRequestWith(serde_json::json!({})),
+            AppError::Conflict("x".into()),
+            AppError::ConflictWith(serde_json::json!({})),
+            AppError::DatabaseError("db".into()),
+            AppError::InternalError("err".into()),
+            AppError::InternalErrorWith(serde_json::json!({})),
+        ];
+
+        for v in variants {
+            let s = format!("{}", v.clone());
+            let _resp = v.into_response();
+            assert!(!s.is_empty());
+        }
+    }
+}

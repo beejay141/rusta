@@ -234,6 +234,9 @@ impl CommentRepository for MongoCommentRepository {
     }
 
     async fn add_like(&self, id: &str, user_id: &str) -> Result<Option<Comment>, AppError> {
+        // Use an aggregation-style update pipeline to add the user id to `liked_by`
+        // only if missing, and recompute `like_count` from the array size so
+        // the operation is idempotent.
         self.apm
             .wrap_span_future(
                 "mongo.comments.add_like",
@@ -241,7 +244,7 @@ impl CommentRepository for MongoCommentRepository {
                 Some(
                     [
                         ("collection".into(), json!("comments")),
-                        ("op".into(), json!("update_one")),
+                        ("op".into(), json!("update_one_pipeline")),
                         ("id".into(), json!(id)),
                         ("user_id".into(), json!(user_id)),
                     ]
@@ -252,15 +255,25 @@ impl CommentRepository for MongoCommentRepository {
                         .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
                     let coll = self.db.collection::<Document>("comments");
 
-                    let result = coll
-                        .update_one(
-                            doc! { "_id": oid },
-                            doc! {
-                                "$addToSet": { "liked_by": user_id },
-                                "$inc": { "like_count": 1 },
+                    // Build pipeline update that conditionally appends the user id
+                    // to `liked_by` if it does not already exist, then sets
+                    // `like_count` to the array size. This keeps counts correct
+                    // and makes the operation idempotent.
+                    let pipeline = vec![doc! {
+                        "$set": {
+                            "liked_by": {
+                                "$cond": {
+                                    "if": { "$in": [ user_id, "$liked_by" ] },
+                                    "then": "$liked_by",
+                                    "else": { "$concatArrays": [ { "$ifNull": ["$liked_by", []] }, [ user_id ] ] }
+                                }
                             },
-                        )
-                        .await?;
+                            "like_count": { "$size": { "$cond": { "if": { "$in": [ user_id, "$liked_by" ] }, "then": "$liked_by", "else": { "$concatArrays": [ { "$ifNull": ["$liked_by", []] }, [ user_id ] ] } } } }
+                        }
+                    }];
+
+                    // Use update with pipeline (supported by modern MongoDB servers)
+                    let result = coll.update_one(doc! { "_id": oid }, pipeline).await?;
 
                     if result.matched_count == 0 {
                         return Ok(None);
@@ -276,6 +289,9 @@ impl CommentRepository for MongoCommentRepository {
     }
 
     async fn remove_like(&self, id: &str, user_id: &str) -> Result<Option<Comment>, AppError> {
+        // Use a pipeline update that removes the user id from `liked_by` and
+        // recomputes `like_count` from the array size. This avoids decrementing
+        // below zero and keeps the operation idempotent.
         self.apm
             .wrap_span_future(
                 "mongo.comments.remove_like",
@@ -283,7 +299,7 @@ impl CommentRepository for MongoCommentRepository {
                 Some(
                     [
                         ("collection".into(), json!("comments")),
-                        ("op".into(), json!("update_one")),
+                        ("op".into(), json!("update_one_pipeline")),
                         ("id".into(), json!(id)),
                         ("user_id".into(), json!(user_id)),
                     ]
@@ -294,15 +310,20 @@ impl CommentRepository for MongoCommentRepository {
                         .map_err(|_| AppError::NotFound("Invalid comment id".into()))?;
                     let coll = self.db.collection::<Document>("comments");
 
-                    let result = coll
-                        .update_one(
-                            doc! { "_id": oid },
-                            doc! {
-                                "$pull": { "liked_by": user_id },
-                                "$inc": { "like_count": -1 },
+                    let pipeline = vec![doc! {
+                        "$set": {
+                            "liked_by": {
+                                "$filter": {
+                                    "input": { "$ifNull": ["$liked_by", []] },
+                                    "as": "u",
+                                    "cond": { "$ne": ["$$u", user_id] }
+                                }
                             },
-                        )
-                        .await?;
+                            "like_count": { "$size": { "$filter": { "input": { "$ifNull": ["$liked_by", []] }, "as": "u", "cond": { "$ne": ["$$u", user_id] } } } }
+                        }
+                    }];
+
+                    let result = coll.update_one(doc! { "_id": oid }, pipeline).await?;
 
                     if result.matched_count == 0 {
                         return Ok(None);

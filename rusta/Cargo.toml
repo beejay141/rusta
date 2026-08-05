@@ -2,6 +2,12 @@
 name = "rusta"
 version = "0.1.0"
 edition = "2021"
+description = "A clean-architecture Rust API framework with dependency injection and middleware"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/beejay141/rusta"
+keywords = ["web", "framework", "axum", "api", "di"]
+categories = ["web-programming", "api-bindings"]
+readme = "README.md"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -12,5 +18,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 http = "1"
 thiserror = "1"
-rusta-di = { path = "../rusta-di" }
-rusta-di-macros = { path = "../rusta-di-macros" }
+validator = { version = "0.18", features = ["derive"] }
+rusta-di = { version = "0.1.0", path = "../rusta-di" }
+rusta-di-macros = { version = "0.1.0", path = "../rusta-di-macros" }

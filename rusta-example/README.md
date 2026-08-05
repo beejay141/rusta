@@ -33,7 +33,7 @@ docker compose up mongo -d
 3. Run the application:
 
 ```bash
-cargo run -p ravix-example
+cargo run -p rusta-example
 ```
 
 The API will be available at `http://localhost:3001`.
@@ -90,7 +90,7 @@ This starts Elasticsearch and Kibana in addition to the API and MongoDB.
 
 1. Open Kibana at `http://localhost:5601`
 2. Navigate to **Stack Management** → **Index Patterns**
-3. Create index pattern: `ravix-apm-*`
+3. Create index pattern: `rusta-apm-*`
 4. Set timestamp field: `start_time`
 
 ### 2. Create Dashboards
@@ -147,10 +147,10 @@ Use the `correlation_id` field to trace requests across logs:
 
 ```bash
 # Unit and integration tests
-cargo test -p ravix-example
+cargo test -p rusta-example
 
 # Benchmarks
-cargo bench -p ravix-example
+cargo bench -p rusta-example
 ```
 
 ## Postman Documentation
@@ -163,7 +163,7 @@ A complete Postman collection and documentation is available in the `docs/` dire
 ### Quick Import
 
 1. Start the services: `docker compose up --build`
-2. Open Postman and import `ravix-example/Blog API.postman_collection.json`
+2. Open Postman and import `rusta-example/Blog API.postman_collection.json`
 3. Follow the testing workflow in the collection
 
 ## Environment Variables
@@ -179,7 +179,7 @@ A complete Postman collection and documentation is available in the `docs/` dire
 ## Architecture
 
 ```
-ravix-example/
+rusta-example/
 ├── src/
 │   ├── config.rs        # AppConfig from environment
 │   ├── db.rs            # MongoDB initialization

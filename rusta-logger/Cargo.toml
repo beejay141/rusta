@@ -2,6 +2,12 @@
 name = "rusta-logger"
 version = "0.1.0"
 edition = "2021"
+description = "Structured logging middleware for the Rusta framework"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/beejay141/rusta"
+keywords = ["logging", "structured-logging", "middleware"]
+categories = ["development-tools", "development-tools::logging"]
+readme = "README.md"
 
 [features]
 default = ["axum-middleware"]
@@ -15,7 +21,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 axum = { version = "0.7", optional = true }
 log = "0.4"
-rusta-di = { path = "../rusta-di" }
+rusta-di = { version = "0.1.0", path = "../rusta-di" }
 
 [dev-dependencies]
 tempfile = "3"

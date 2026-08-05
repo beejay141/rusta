@@ -206,3 +206,74 @@ impl AuthService {
         result
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use async_trait::async_trait;
+    use rusta::Injectable;
+    use rusta_logger::Logger;
+    use std::sync::Arc;
+
+    struct DummyUserRepo;
+
+    #[async_trait]
+    impl crate::repositories::UserRepository for DummyUserRepo {
+        async fn find_by_id(
+            &self,
+            id: &str,
+        ) -> Result<Option<crate::models::user::User>, AppError> {
+            Ok(Some(crate::models::user::User {
+                id: id.to_string(),
+                username: "u1".to_string(),
+                email: "u1@example.com".to_string(),
+                password_hash: "hash".to_string(),
+                created_at: chrono::Utc::now(),
+            }))
+        }
+
+        async fn find_by_email(
+            &self,
+            _email: &str,
+        ) -> Result<Option<crate::models::user::User>, AppError> {
+            Ok(None)
+        }
+
+        async fn find_by_username(
+            &self,
+            _username: &str,
+        ) -> Result<Option<crate::models::user::User>, AppError> {
+            Ok(None)
+        }
+
+        async fn save(
+            &self,
+            _dto: crate::models::user::CreateUserDto,
+            _password_hash: String,
+        ) -> Result<crate::models::user::User, AppError> {
+            Ok(crate::models::user::User {
+                id: "u_new".to_string(),
+                username: "u_new".to_string(),
+                email: "u_new@example.com".to_string(),
+                password_hash: "h".to_string(),
+                created_at: chrono::Utc::now(),
+            })
+        }
+    }
+
+    #[tokio::test]
+    async fn auth_service_get_user_calls_repo() {
+        let mut c = rusta::Container::new();
+        c.register(Arc::new(DummyUserRepo) as Arc<dyn crate::repositories::UserRepository>);
+        c.register(Arc::new(crate::config::AppConfig::from_env()));
+        c.register(rusta_apm::Apm::new());
+        c.register(Logger::new());
+
+        let svc: Arc<AuthService> = AuthService::construct(&c);
+
+        let res = svc.get_user("u1").await;
+        assert!(res.is_ok());
+        let user = res.unwrap();
+        assert_eq!(user.id, "u1");
+    }
+}

@@ -18,7 +18,7 @@ async fn test_register_duplicate_email() {
 
     // Second registration with same email should fail
     // register_user uses format!("test_{}@example.com", suffix) so we use the same email
-    use ravix_example::models::user::CreateUserDto;
+    use rusta_example::models::user::CreateUserDto;
     let dto = CreateUserDto {
         username: "duplicate2".to_string(),
         email: "test_duplicate@example.com".to_string(), // Same email as first registration
@@ -49,7 +49,7 @@ async fn test_login_wrong_password() {
     let _token = register_user(&ctx, "wrong_pass").await;
 
     // Login with wrong password
-    use ravix_example::models::user::LoginDto;
+    use rusta_example::models::user::LoginDto;
     let dto = LoginDto {
         email: "test_wrong_pass@example.com".to_string(),
         password: "wrongpassword".to_string(),

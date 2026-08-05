@@ -2,6 +2,12 @@
 name = "rusta-apm"
 version = "0.1.0"
 edition = "2021"
+description = "Application performance monitoring for the Rusta framework"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/beejay141/rusta"
+keywords = ["apm", "tracing", "monitoring", "opentelemetry"]
+categories = ["development-tools", "development-tools::profiling"]
+readme = "README.md"
 
 [features]
 default = ["axum-middleware"]
@@ -16,7 +22,7 @@ chrono = { version = "0.4", features = ["serde"] }
 axum = { version = "0.7", optional = true }
 log = "0.4"
 futures = "0.3"
-rusta-di = { path = "../rusta-di" }
+rusta-di = { version = "0.1.0", path = "../rusta-di" }
 
 [dev-dependencies]
 tempfile = "3"

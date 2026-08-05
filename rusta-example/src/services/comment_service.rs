@@ -163,3 +163,81 @@ impl CommentService {
             .await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use async_trait::async_trait;
+    use rusta::Injectable;
+    use std::sync::Arc;
+
+    struct DummyCommentRepo;
+
+    #[async_trait]
+    impl crate::repositories::CommentRepository for DummyCommentRepo {
+        async fn find_by_post(&self, _post_id: &str) -> Result<Vec<Comment>, AppError> {
+            Ok(vec![])
+        }
+
+        async fn find_by_id(&self, id: &str) -> Result<Option<Comment>, AppError> {
+            Ok(Some(Comment {
+                id: id.to_string(),
+                post_id: "p1".to_string(),
+                author_id: "a1".to_string(),
+                body: "body".to_string(),
+                like_count: 0,
+                liked_by: vec![],
+                created_at: chrono::Utc::now(),
+                updated_at: chrono::Utc::now(),
+            }))
+        }
+
+        async fn save(
+            &self,
+            _post_id: &str,
+            _author_id: &str,
+            _dto: CreateCommentDto,
+        ) -> Result<Comment, AppError> {
+            Err(AppError::InternalError("not implemented".into()))
+        }
+
+        async fn update(
+            &self,
+            _id: &str,
+            _author_id: &str,
+            _dto: UpdateCommentDto,
+        ) -> Result<Option<Comment>, AppError> {
+            Ok(None)
+        }
+
+        async fn delete(&self, _id: &str, _author_id: &str) -> Result<bool, AppError> {
+            Ok(true)
+        }
+
+        async fn add_like(&self, _id: &str, _user_id: &str) -> Result<Option<Comment>, AppError> {
+            Ok(None)
+        }
+
+        async fn remove_like(
+            &self,
+            _id: &str,
+            _user_id: &str,
+        ) -> Result<Option<Comment>, AppError> {
+            Ok(None)
+        }
+    }
+
+    #[tokio::test]
+    async fn comment_service_get_calls_repo() {
+        let mut c = rusta::Container::new();
+        c.register(Arc::new(DummyCommentRepo) as Arc<dyn crate::repositories::CommentRepository>);
+        c.register(rusta_apm::Apm::new());
+
+        let svc: Arc<CommentService> = CommentService::construct(&c);
+
+        let res = svc.get("cid").await;
+        assert!(res.is_ok());
+        let comment = res.unwrap();
+        assert_eq!(comment.id, "cid");
+    }
+}

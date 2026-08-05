@@ -2,6 +2,12 @@
 name = "rusta-di-macros"
 version = "0.1.0"
 edition = "2021"
+description = "Proc-macro support for Rusta dependency injection"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/beejay141/rusta"
+keywords = ["proc-macro", "di", "dependency-injection"]
+categories = ["development-tools", "development-tools::procedural-macros"]
+readme = "README.md"
 
 [lib]
 proc-macro = true

@@ -18,11 +18,10 @@ pub struct AuthController {
 impl AuthController {
     /// POST /auth/register
     #[post("/register")]
-    pub async fn register(&self, Json(body): Json<CreateUserDto>) -> Response {
-        if let Err(e) = validator::Validate::validate(&body) {
-            return Http::bad_request(&format!("Validation error: {:?}", e));
-        }
-
+    pub async fn register(
+        &self,
+        ValidatedJson(body, ..): ValidatedJson<CreateUserDto>,
+    ) -> Response {
         match self.svc.register(body).await {
             Ok(auth) => Http::created(auth),
             Err(e) => {
@@ -34,10 +33,7 @@ impl AuthController {
 
     /// POST /auth/login
     #[post("/login")]
-    pub async fn login(&self, Json(body): Json<LoginDto>) -> Response {
-        if let Err(e) = validator::Validate::validate(&body) {
-            return Http::bad_request(&format!("Validation error: {:?}", e));
-        }
+    pub async fn login(&self, ValidatedJson(body, ..): ValidatedJson<LoginDto>) -> Response {
         match self.svc.login(body).await {
             Ok(auth) => Http::json(auth),
             Err(e) => e.into_response(),

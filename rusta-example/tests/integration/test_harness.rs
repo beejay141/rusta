@@ -15,7 +15,7 @@ use testcontainers::{
 use testcontainers_modules::mongo;
 
 /// Docker image name for the test service
-const TEST_IMAGE_NAME: &str = "ravix-example:test";
+const TEST_IMAGE_NAME: &str = "rusta-example:test";
 
 /// Global flag to ensure image is built only once per test run
 static IMAGE_BUILT: Lazy<std::sync::Once> = Lazy::new(|| std::sync::Once::new());
@@ -32,7 +32,7 @@ fn ensure_image_built() {
                 "-t",
                 TEST_IMAGE_NAME,
                 "-f",
-                "ravix-example/Dockerfile",
+                "rusta-example/Dockerfile",
                 ".",
             ])
             .current_dir(env!("CARGO_MANIFEST_DIR"))
@@ -229,7 +229,7 @@ async fn wait_for_service_ready(client: &Client, base_url: &str) {
 
 /// Helper to register a user and return the token
 pub async fn register_user(ctx: &TestContext, suffix: &str) -> String {
-    use ravix_example::models::user::CreateUserDto;
+    use rusta_example::models::user::CreateUserDto;
 
     let dto = CreateUserDto {
         username: format!("testuser_{}", suffix),
@@ -249,7 +249,7 @@ pub async fn register_user(ctx: &TestContext, suffix: &str) -> String {
 
 /// Helper to login and return the token
 pub async fn login_user(ctx: &TestContext, email: &str) -> String {
-    use ravix_example::models::user::LoginDto;
+    use rusta_example::models::user::LoginDto;
 
     let dto = LoginDto {
         email: email.to_string(),

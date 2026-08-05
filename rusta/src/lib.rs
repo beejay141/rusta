@@ -56,6 +56,7 @@ pub use app::App;
 pub use error::ErrorResponse;
 pub use middleware::MiddlewareChain;
 pub use middleware::{CorsConfig, CorsConfigBuilder};
+pub use request::{DefaultValidationErrorFormatter, ValidatedJson, ValidationErrorFormatter};
 pub use response::{ErrorObject, Http};
 
 // Re-export DI types from rusta-di
@@ -99,8 +100,8 @@ pub mod prelude {
     pub use crate::MiddlewareChain;
     pub use crate::{controller, delete, get, injectable, middleware, patch, post, put};
     pub use crate::{
-        Body, Extension, IntoResponse, Json, Next, Path, Query, Request, Response, State,
-        StatusCode,
+        Body, DefaultValidationErrorFormatter, Extension, IntoResponse, Json, Next, Path, Query,
+        Request, Response, State, StatusCode, ValidatedJson, ValidationErrorFormatter,
     };
     pub use crate::{Container, ContainerRef, CorsConfig, CorsConfigBuilder, Inject, Injectable};
 }

@@ -2,6 +2,12 @@
 name = "rusta-di"
 version = "0.1.0"
 edition = "2021"
+description = "Dependency injection container for the Rusta framework"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/beejay141/rusta"
+keywords = ["di", "dependency-injection", "ioc", "container"]
+categories = ["development-tools"]
+readme = "README.md"
 
 [dependencies]
 axum = { version = "0.7", features = ["json", "macros"] }

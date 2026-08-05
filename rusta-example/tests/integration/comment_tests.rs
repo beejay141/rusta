@@ -1,6 +1,6 @@
 use crate::test_harness::{TestContext, register_user};
-use ravix_example::models::post::CreatePostDto;
-use ravix_example::models::comment::{CreateCommentDto, UpdateCommentDto};
+use rusta_example::models::post::CreatePostDto;
+use rusta_example::models::comment::{CreateCommentDto, UpdateCommentDto};
 
 /// Integration tests that run the full service in Docker containers
 /// and exercise the HTTP API over the network.
