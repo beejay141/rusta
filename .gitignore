@@ -1,4 +1,5 @@
 /target
 *.md
 !README.md
+!rusta-docs/src/content/docs/**/*.md
 **/node_modules
