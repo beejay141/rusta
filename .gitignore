@@ -1,4 +1,5 @@
 /target
+rusta-docs/dist
 *.md
 !README.md
 !rusta-docs/src/content/docs/**/*.md
