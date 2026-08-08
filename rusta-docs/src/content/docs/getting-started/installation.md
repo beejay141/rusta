@@ -19,15 +19,6 @@ sidebar:
 rusta = "0.1.0"
 ```
 
-For local development, use the path dependency:
-
-```toml
-[dependencies]
-rusta = { path = "../rusta" }
-rusta-apm = { path = "../rusta-apm" }
-rusta-logger = { path = "../rusta-logger" }
-```
-
 ## Optional Features
 
 The `rusta-apm` and `rusta-logger` crates include optional `axum-middleware` feature (enabled by default):
