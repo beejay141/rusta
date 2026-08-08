@@ -1,13 +1,13 @@
 ---
 title: API Reference
-description: Complete reference for all public Ravix types and methods.
+description: Complete reference for all public Rusta types and methods.
 sidebar:
   order: 5
 ---
 
 # API Reference
 
-Complete reference for all public Ravix APIs.
+Complete reference for all public Rusta APIs.
 
 ## Core Types
 
@@ -16,7 +16,7 @@ Complete reference for all public Ravix APIs.
 The main application builder.
 
 ```rust
-use ravix::App;
+use rusta::App;
 
 let app = App::new()
     .container(container)
@@ -42,7 +42,7 @@ let app = App::new()
 Dependency injection container.
 
 ```rust
-use ravix::Container;
+use rusta::Container;
 
 let mut container = Container::new();
 container.register(MyService::construct(&container));
@@ -61,7 +61,7 @@ container.verify()?;
 Response helper methods.
 
 ```rust
-use ravix::Http;
+use rusta::Http;
 
 Http::json(data)           // 200 OK with JSON
 Http::created(data)         // 201 Created
@@ -157,7 +157,7 @@ async fn handler(
 Build middleware pipelines.
 
 ```rust
-use ravix::MiddlewareChain;
+use rusta::MiddlewareChain;
 
 let middleware = MiddlewareChain::new()
     .chain(my_middleware)
@@ -197,7 +197,7 @@ pub enum ErrorResponse {
 ### `ErrorObject`
 
 ```rust
-use ravix::ErrorObject;
+use rusta::ErrorObject;
 
 Http::bad_request(ErrorObject(json!({
     "code": "VALIDATION_ERROR",
@@ -208,7 +208,7 @@ Http::bad_request(ErrorObject(json!({
 ## Prelude
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 
 // Includes:
 // - App, Container, Http

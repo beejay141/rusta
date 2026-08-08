@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Add Ravix to your Rust project and configure optional features.
+description: Add Rusta to your Rust project and configure optional features.
 sidebar:
   order: 1
 ---
@@ -16,27 +16,27 @@ sidebar:
 
 ```toml
 [dependencies]
-ravix = "0.1.0"
+rusta = "0.1.0"
 ```
 
 For local development, use the path dependency:
 
 ```toml
 [dependencies]
-ravix = { path = "../ravix" }
-ravix-apm = { path = "../ravix-apm" }
-ravix-logger = { path = "../ravix-logger" }
+rusta = { path = "../rusta" }
+rusta-apm = { path = "../rusta-apm" }
+rusta-logger = { path = "../rusta-logger" }
 ```
 
 ## Optional Features
 
-The `ravix-apm` and `ravix-logger` crates include optional `axum-middleware` feature (enabled by default):
+The `rusta-apm` and `rusta-logger` crates include optional `axum-middleware` feature (enabled by default):
 
 ```toml
 [dependencies]
-ravix-apm = { path = "../ravix-apm" }
+rusta-apm = "0.1.0"
 # Without middleware (if you want custom middleware)
-ravix-apm = { path = "../ravix-apm", default-features = false }
+rusta-apm = { version = "0.1.0", default-features = false }
 ```
 
 ## Verify Installation
@@ -44,10 +44,10 @@ ravix-apm = { path = "../ravix-apm", default-features = false }
 Create a minimal `main.rs`:
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 
 fn main() {
-    println!("Ravix installed successfully!");
+    println!("Rusta installed successfully!");
 }
 ```
 

@@ -1,18 +1,18 @@
 ---
 title: CORS Configuration
-description: Configure Cross-Origin Resource Sharing for your Ravix API.
+description: Configure Cross-Origin Resource Sharing for your Rusta API.
 sidebar:
   order: 2
 ---
 
 # CORS Configuration
 
-Ravix provides a `CorsConfig` builder for configuring Cross-Origin Resource Sharing.
+Rusta provides a `CorsConfig` builder for configuring Cross-Origin Resource Sharing.
 
 ## Basic Configuration
 
 ```rust
-use ravix::CorsConfig;
+use rusta::CorsConfig;
 
 let cors = CorsConfig::builder()
     .allow_origins(vec!["https://app.example.com".to_string()])

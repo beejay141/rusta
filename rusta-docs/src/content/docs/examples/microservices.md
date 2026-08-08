@@ -7,7 +7,7 @@ sidebar:
 
 # Microservices Patterns
 
-Patterns for building multi-service Ravix applications.
+Patterns for building multi-service Rusta applications.
 
 ## Shared Kernel Pattern
 
@@ -66,7 +66,7 @@ pub enum SharedError {
 }
 
 // shared/src/di.rs
-use ravix::Container;
+use rusta::Container;
 
 pub fn build_shared_container() -> Container {
     let mut container = Container::new();
@@ -233,7 +233,7 @@ services:
 
 ```rust
 // gateway/src/main.rs
-use ravix::{App, MiddlewareChain};
+use rusta::{App, MiddlewareChain};
 use tower_http::cors::CorsLayer;
 
 let app = App::new()

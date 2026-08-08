@@ -52,7 +52,7 @@ pub enum ErrorResponse {
 For structured error responses:
 
 ```rust
-use ravix::{Http, ErrorObject};
+use rusta::{Http, ErrorObject};
 
 #[derive(Serialize)]
 struct ValidationError {
@@ -108,7 +108,7 @@ Implement `IntoResponse` for custom error handling:
 
 ```rust
 use axum::{response::{IntoResponse, Json}, http::StatusCode};
-use ravix::ErrorResponse;
+use rusta::ErrorResponse;
 
 pub enum AppError {
     NotFound(String),

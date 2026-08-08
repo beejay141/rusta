@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: Deploy Ravix applications with Docker, environment configuration, and production considerations.
+description: Deploy Rusta applications with Docker, environment configuration, and production considerations.
 sidebar:
   order: 6
 ---
@@ -269,7 +269,7 @@ spec:
 
 - **APM**: Ship `apm.ndjson` to Elasticsearch, Datadog, or Loki
 - **Logs**: Ship `public.ndjson` and `confidential.ndjson` separately
-- **Metrics**: Add `prometheus` feature to `ravix-apm` for `/metrics` endpoint
+- **Metrics**: Add `prometheus` feature to `rusta-apm` for `/metrics` endpoint
 - **Tracing**: Correlation IDs propagate through middleware automatically
 
 ## Graceful Shutdown

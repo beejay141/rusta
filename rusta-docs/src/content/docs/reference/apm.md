@@ -11,8 +11,8 @@ sidebar:
 Enable APM with one line in your middleware chain:
 
 ```rust
-use ravix_apm::apm_middleware;
-use ravix::MiddlewareChain;
+use rusta_apm::apm_middleware;
+use rusta::MiddlewareChain;
 
 let middleware = MiddlewareChain::new().chain(apm_middleware);
 ```
@@ -22,7 +22,7 @@ let middleware = MiddlewareChain::new().chain(apm_middleware);
 ## Configuration
 
 ```rust
-use ravix_apm::{Apm, config};
+use rusta_apm::{Apm, config};
 
 let apm = Apm::configure(
     config()
@@ -182,8 +182,8 @@ let result = Apm::wrap_span_future(
 ## Middleware Integration
 
 ```rust
-use ravix_apm::apm_middleware;
-use ravix::{App, MiddlewareChain};
+use rusta_apm::apm_middleware;
+use rusta::{App, MiddlewareChain};
 
 let middleware = MiddlewareChain::new()
     .chain(apm_middleware);

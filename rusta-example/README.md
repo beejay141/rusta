@@ -1,6 +1,6 @@
-# Ravix Blog API Example
+# Rusta Blog API Example
 
-A full-featured blog application built with the Ravix framework, demonstrating:
+A full-featured blog application built with the Rusta framework, demonstrating:
 
 - MongoDB persistence with async/await
 - JWT authentication with Argon2 password hashing

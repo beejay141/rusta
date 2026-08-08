@@ -1,13 +1,13 @@
 ---
 title: Project Structure
-description: Recommended folder layout for Ravix applications.
+description: Recommended folder layout for Rusta applications.
 sidebar:
   order: 3
 ---
 
 # Project Structure
 
-Ravix doesn't enforce a specific structure, but this layout scales well for production applications.
+Rusta doesn't enforce a specific structure, but this layout scales well for production applications.
 
 ## Recommended Layout
 
@@ -80,7 +80,7 @@ pub mod post;
 
 ```rust
 // src/di/container.rs
-use ravix::Container;
+use rusta::Container;
 use crate::{
     services::{UserService, PostService},
     repositories::{UserRepository, PostRepository},
@@ -115,7 +115,7 @@ mod repositories;
 mod models;
 mod di;
 
-use ravix::App;
+use rusta::App;
 use di::build_container;
 
 #[tokio::main]

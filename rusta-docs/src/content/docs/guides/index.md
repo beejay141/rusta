@@ -1,13 +1,13 @@
 ---
 title: Guides
-description: Deep dives into Ravix features and patterns.
+description: Deep dives into Rusta features and patterns.
 sidebar:
   order: 0
 ---
 
 # Guides
 
-Learn Ravix features through detailed walkthroughs.
+Learn Rusta features through detailed walkthroughs.
 
 ## Topics
 

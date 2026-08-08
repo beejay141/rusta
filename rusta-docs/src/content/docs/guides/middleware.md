@@ -7,7 +7,7 @@ sidebar:
 
 # Middleware
 
-Ravix supports both per-handler and global middleware.
+Rusta supports both per-handler and global middleware.
 
 :::caution[Middleware vs Layers]
 
@@ -20,7 +20,7 @@ Ravix supports both per-handler and global middleware.
 Attach middleware to individual handlers using the `#[middleware]` attribute:
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 
 pub async fn auth_guard(
     State(container): State<ContainerRef>,
@@ -48,7 +48,7 @@ impl PostController {
 Apply middleware to all routes:
 
 ```rust
-use ravix::{App, MiddlewareChain, Request, Next, Response};
+use rusta::{App, MiddlewareChain, Request, Next, Response};
 
 async fn request_id_middleware(request: Request, next: Next) -> Response {
     let id = uuid::Uuid::new_v4().to_string();
@@ -78,7 +78,7 @@ let middleware = MiddlewareChain::new()
 Add tower-http layers (compression, tracing, etc.):
 
 ```rust
-use ravix::MiddlewareChain;
+use rusta::MiddlewareChain;
 use tower_http::{
     compression::CompressionLayer,
     trace::TraceLayer,
@@ -128,7 +128,7 @@ async fn auth_middleware(
 ### CORS
 
 ```rust
-use ravix::CorsConfig;
+use rusta::CorsConfig;
 
 let cors = CorsConfig::builder()
     .allow_origins(vec!["https://app.example.com".to_string()])
@@ -143,7 +143,7 @@ App::new().cors(cors).await;
 ### APM Middleware
 
 ```rust
-use ravix_apm::apm_middleware;
+use rusta_apm::apm_middleware;
 
 let middleware = MiddlewareChain::new()
     .chain(apm_middleware);
@@ -152,7 +152,7 @@ let middleware = MiddlewareChain::new()
 ### Logger Middleware
 
 ```rust
-use ravix_logger::logger_middleware;
+use rusta_logger::logger_middleware;
 
 let middleware = MiddlewareChain::new()
     .chain(logger_middleware);

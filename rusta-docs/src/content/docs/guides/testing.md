@@ -7,7 +7,7 @@ sidebar:
 
 # Testing
 
-Ravix applications are designed for testability — DI container makes mocking straightforward.
+Rusta applications are designed for testability — DI container makes mocking straightforward.
 
 ## Unit Testing Handlers
 
@@ -17,7 +17,7 @@ Test controllers in isolation by injecting mock services:
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ravix::{App, Container, Http, Response};
+    use rusta::{App, Container, Http, Response};
     use std::sync::Arc;
     use mockall::predicate::*;
 
@@ -56,7 +56,7 @@ Spin up real dependencies (PostgreSQL, MongoDB, Redis) for integration tests:
 ```rust
 // tests/integration/user_api.rs
 use testcontainers::{runners::AsyncRunner, GenericImage};
-use ravix::{App, Container};
+use rusta::{App, Container};
 use reqwest::Client;
 
 #[tokio::test]

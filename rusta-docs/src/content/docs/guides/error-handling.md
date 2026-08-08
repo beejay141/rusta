@@ -7,7 +7,7 @@ sidebar:
 
 # Error Handling
 
-Ravix provides flexible error handling through `Http` response helpers, `ErrorResponse` variants, and custom `IntoResponse` implementations.
+Rusta provides flexible error handling through `Http` response helpers, `ErrorResponse` variants, and custom `IntoResponse` implementations.
 
 :::tip[Error Philosophy]
 Prefer `Result<Response, AppError>` in handlers. This makes error types explicit, enables `?` operator, and keeps success paths clean.
@@ -18,7 +18,7 @@ Prefer `Result<Response, AppError>` in handlers. This makes error types explicit
 ### Simple String Errors
 
 ```rust
-use ravix::Http;
+use rusta::Http;
 
 #[get("/users/:id")]
 pub async fn get_user(&self, Path(id): Path<String>) -> Response {
@@ -40,7 +40,7 @@ pub async fn get_user(&self, Path(id): Path<String>) -> Response {
 ### Structured Errors with `ErrorObject`
 
 ```rust
-use ravix::{Http, ErrorObject};
+use rusta::{Http, ErrorObject};
 use serde_json::json;
 
 Http::bad_request(ErrorObject(json!({
@@ -73,7 +73,7 @@ Implement `IntoResponse` for domain-specific errors:
 
 ```rust
 use axum::{response::{IntoResponse, Json}, http::StatusCode};
-use ravix::ErrorResponse;
+use rusta::ErrorResponse;
 use serde_json::json;
 use thiserror::Error;
 

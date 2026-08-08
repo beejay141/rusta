@@ -1,6 +1,6 @@
 ---
 title: Blog API Walkthrough
-description: Complete walkthrough of the Ravix Blog API example application.
+description: Complete walkthrough of the Rusta Blog API example application.
 sidebar:
   order: 1
 ---
@@ -12,7 +12,7 @@ This guide walks through the [rusta-example](https://github.com/beejay141/rusta/
 ## Project Structure
 
 ```
-ravix-example/
+rusta-example/
 ├── Cargo.toml
 ├── src/
 │   ├── main.rs              # App bootstrap
@@ -264,9 +264,9 @@ mod models;
 mod repositories;
 mod services;
 
-use ravix::{App, Container, MiddlewareChain};
-use ravix_apm::apm_middleware;
-use ravix_logger::logger_middleware;
+use rusta::{App, Container, MiddlewareChain};
+use rusta_apm::apm_middleware;
+use rusta_logger::logger_middleware;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -306,8 +306,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Running the Example
 
 ```bash
-# From ravix-example directory
-cd ravix-example
+# From rusta-example directory
+cd rusta-example
 
 # Start PostgreSQL
 docker-compose up -d db

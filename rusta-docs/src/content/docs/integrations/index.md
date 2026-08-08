@@ -7,7 +7,7 @@ sidebar:
 
 # Integrations
 
-Connect Ravix with external services and tools.
+Connect Rusta with external services and tools.
 
 ## Available Integrations
 

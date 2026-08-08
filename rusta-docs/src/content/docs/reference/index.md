@@ -1,13 +1,13 @@
 ---
 title: Reference
-description: API reference for Ravix types and methods.
+description: API reference for Rusta types and methods.
 sidebar:
   order: 0
 ---
 
 # Reference
 
-Complete API documentation for Ravix.
+Complete API documentation for Rusta.
 
 ## Sections
 

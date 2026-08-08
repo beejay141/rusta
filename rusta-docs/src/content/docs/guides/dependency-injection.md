@@ -7,7 +7,7 @@ sidebar:
 
 # Dependency Injection
 
-Ravix provides a DI container for managing service dependencies.
+Rusta provides a DI container for managing service dependencies.
 
 :::tip[Why DI?]
 Dependency injection decouples your business logic from concrete implementations. Swap databases, mock services in tests, and configure different environments without changing controller code.
@@ -18,7 +18,7 @@ Dependency injection decouples your business logic from concrete implementations
 Mark structs as injectable and declare dependencies:
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 use std::sync::Arc;
 
 #[injectable]

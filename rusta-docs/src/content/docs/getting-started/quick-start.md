@@ -1,13 +1,13 @@
 ---
 title: Quick Start
-description: Build your first Ravix API in 5 minutes.
+description: Build your first Rusta API in 5 minutes.
 sidebar:
   order: 2
 ---
 
 # Quick Start
 
-Build your first Ravix API in 5 minutes.
+Build your first Rusta API in 5 minutes.
 
 ## 1. Create a New Project
 
@@ -20,7 +20,7 @@ cd my-api
 
 ```bash
 # Add to Cargo.toml
-cargo add ravix tokio --features full
+cargo add rusta tokio --features full
 ```
 
 ## 3. Create Your First Controller
@@ -28,7 +28,7 @@ cargo add ravix tokio --features full
 Create `src/controllers/user_controller.rs`:
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 use std::sync::Arc;
 
 #[injectable]
@@ -62,7 +62,7 @@ Update `src/main.rs`:
 ```rust
 mod controllers;
 
-use ravix::{App, Container};
+use rusta::{App, Container};
 use controllers::UserController;
 
 #[tokio::main]

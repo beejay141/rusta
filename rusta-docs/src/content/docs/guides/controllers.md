@@ -7,7 +7,7 @@ sidebar:
 
 # Controllers
 
-Controllers handle HTTP requests and responses. Ravix uses proc-macros for declarative route registration.
+Controllers handle HTTP requests and responses. Rusta uses proc-macros for declarative route registration.
 
 :::tip[Controller vs Handler]
 Controllers are structs with an `impl` block. Each method becomes a route handler. The `#[controller]` macro registers all methods with HTTP attributes at compile time.
@@ -16,7 +16,7 @@ Controllers are structs with an `impl` block. Each method becomes a route handle
 ## Basic Controller
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 use std::sync::Arc;
 
 #[controller("/users")]

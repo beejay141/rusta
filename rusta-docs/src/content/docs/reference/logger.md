@@ -11,8 +11,8 @@ sidebar:
 Enable structured logging with one line in your middleware chain:
 
 ```rust
-use ravix_logger::logger_middleware;
-use ravix::MiddlewareChain;
+use rusta_logger::logger_middleware;
+use rusta::MiddlewareChain;
 
 let middleware = MiddlewareChain::new().chain(logger_middleware);
 ```
@@ -22,7 +22,7 @@ let middleware = MiddlewareChain::new().chain(logger_middleware);
 ## Configuration
 
 ```rust
-use ravix_logger::{Logger, config, LogLevel};
+use rusta_logger::{Logger, config, LogLevel};
 
 let logger = Logger::configure(
     config()
@@ -80,7 +80,7 @@ Logger::error("Error occurred", None);
 ### With Context
 
 ```rust
-use ravix_logger::LogOptions;
+use rusta_logger::LogOptions;
 use serde_json::json;
 
 Logger::info(
@@ -139,8 +139,8 @@ Logger::log(
 ## Middleware Integration
 
 ```rust
-use ravix_logger::logger_middleware;
-use ravix::{App, MiddlewareChain};
+use rusta_logger::logger_middleware;
+use rusta::{App, MiddlewareChain};
 
 let middleware = MiddlewareChain::new()
     .chain(logger_middleware);
@@ -166,7 +166,7 @@ The middleware automatically:
 Implement `LogAdapter` for custom formatting:
 
 ```rust
-use ravix_logger::{LogAdapter, LogEntry};
+use rusta_logger::{LogAdapter, LogEntry};
 
 pub struct JsonAdapter;
 

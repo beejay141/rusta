@@ -1,5 +1,5 @@
 ---
-title: Ravix Documentation
+title: Rusta Documentation
 template: splash
 hero:
   title: Build Modern Rust APIs
@@ -61,7 +61,7 @@ let app = Router::new()
     .layer(Extension(Arc::new(UserService::new())))
     .layer(CorsLayer::permissive());
 
-// Ravix — declare intent, framework handles wiring
+// Rusta — declare intent, framework handles wiring
 #[controller("/users")]
 impl UserController {
     #[get("/")]
@@ -77,7 +77,7 @@ impl UserController {
 ## Quick Example
 
 ```rust
-use ravix::prelude::*;
+use rusta::prelude::*;
 use std::sync::Arc;
 
 #[controller("/users")]
@@ -106,18 +106,18 @@ async fn main() {
 
 ## Ecosystem
 
-Ravix is a family of crates — use what you need, skip what you don't.
+Rusta is a family of crates — use what you need, skip what you don't.
 
 | Crate          | Purpose                                          | Status    |
 | -------------- | ------------------------------------------------ | --------- |
-| `ravix`        | Core framework: routing, DI, middleware          | ✅ Stable |
-| `ravix-apm`    | Distributed tracing, spans, transactions         | ✅ Stable |
-| `ravix-logger` | Structured logging with context propagation      | ✅ Stable |
-| `ravix-di`     | Standalone DI container                          | ✅ Stable |
-| `ravix-macros` | Proc-macros for `#[controller]`, `#[injectable]` | ✅ Stable |
+| `rusta`        | Core framework: routing, DI, middleware          | ✅ Stable |
+| `rusta-apm`    | Distributed tracing, spans, transactions         | ✅ Stable |
+| `rusta-logger` | Structured logging with context propagation      | ✅ Stable |
+| `rusta-di`     | Standalone DI container                          | ✅ Stable |
+| `rusta-macros` | Proc-macros for `#[controller]`, `#[injectable]` | ✅ Stable |
 
 ## Next Steps
 
-- **New to Ravix?** → [Installation](/getting-started/installation) → [Quick Start](/getting-started/quick-start)
+- **New to Rusta?** → [Installation](/getting-started/installation) → [Quick Start](/getting-started/quick-start)
 - **Coming from Axum?** → [Controllers Guide](/guides/controllers) → [Dependency Injection](/guides/dependency-injection)
 - **Building for production?** → [Error Handling](/guides/error-handling) → [Testing](/guides/testing) → [Deployment](/guides/deployment)
