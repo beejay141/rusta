@@ -14,4 +14,4 @@ Coming soon. This guide will cover:
 - Connection pooling
 - Query builders
 
-Check back later or [open an issue](https://github.com/ravix/ravix/issues) to request this guide.
+Check back later or [open an issue](https://github.com/beejay141/rusta/issues) to request this guide.

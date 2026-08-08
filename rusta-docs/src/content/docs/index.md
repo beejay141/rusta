@@ -10,7 +10,7 @@ hero:
       icon: right-arrow
       variant: primary
     - text: View on GitHub
-      link: https://github.com/ravix/ravix
+      link: https://github.com/beejay141/rusta
       icon: external
 ---
 

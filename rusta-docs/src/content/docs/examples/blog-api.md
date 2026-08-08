@@ -7,7 +7,7 @@ sidebar:
 
 # Blog API Walkthrough
 
-This guide walks through the [ravix-example](https://github.com/ravix/ravix/tree/main/ravix-example) — a complete blog API demonstrating real-world Ravix patterns.
+This guide walks through the [rusta-example](https://github.com/beejay141/rusta/tree/main/rusta-example) — a complete blog API demonstrating real-world Rusta patterns.
 
 ## Project Structure
 

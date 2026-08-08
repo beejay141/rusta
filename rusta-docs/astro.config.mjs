@@ -33,7 +33,7 @@ export default defineConfig({
           tag: "meta",
           attrs: {
             property: "og:image",
-            content: "https://ravix.dev/og-image.svg",
+            content: "https://rusta.dev/og-image.svg",
           },
         },
       ],
@@ -105,11 +105,11 @@ export default defineConfig({
         },
       ],
       social: {
-        github: "https://github.com/ravix/ravix",
+        github: "https://github.com/beejay141/rusta",
         discord: "https://discord.gg/ravix",
       },
     }),
   ],
-  site: "https://ravix.dev",
+  site: "https://rusta.dev",
   base: "/",
 });
