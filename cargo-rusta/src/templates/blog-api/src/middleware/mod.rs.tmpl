@@ -1,0 +1,40 @@
+use axum::http::{Request, StatusCode};
+use axum::middleware::Next;
+use axum::response::Response;
+use jsonwebtoken::{decode, DecodingKey, Validation};
+use serde::{Deserialize, Serialize};
+
+use crate::models::user::Claims;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthGuard;
+
+pub async fn jwt_guard<B>(
+    req: Request<B>,
+    next: Next<B>,
+) -> Result<Response, StatusCode>
+where
+    B: Send + 'static,
+{
+    let auth_header = req
+        .headers()
+        .get("authorization")
+        .and_then(|h| h.to_str().ok());
+
+    let token = match auth_header.and_then(|h| h.strip_prefix("Bearer ")) {
+        Some(t) => t,
+        None => return Err(StatusCode::UNAUTHORIZED),
+    };
+
+    let secret = std::env::var("JWT_SECRET").unwrap_or_default();
+    let validation = Validation::default();
+
+    decode::<Claims>(
+        token,
+        &DecodingKey::from_secret(secret.as_bytes()),
+        &validation,
+    )
+    .map_err(|_| StatusCode::UNAUTHORIZED)?;
+
+    Ok(next.run(req).await)
+}

@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: {{name}}/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - SERVER_PORT=0.0.0.0:3000
+    restart: unless-stopped

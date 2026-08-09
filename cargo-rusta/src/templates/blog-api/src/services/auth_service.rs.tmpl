@@ -1,0 +1,99 @@
+use std::sync::Arc;
+
+use argon2::password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString};
+use argon2::Argon2;
+use chrono::Utc;
+use jsonwebtoken::{encode, EncodingKey, Header};
+use rusta::prelude::*;
+use rusta_logger::Logger;
+
+use crate::errors::AppError;
+use crate::models::user::{AuthResponse, Claims, CreateUserDto, LoginDto, User, UserResponse};
+use crate::repositories::user_repository::UserRepository;
+
+#[injectable]
+pub struct AuthService {
+    #[inject]
+    repo: Arc<dyn UserRepository>,
+    #[inject]
+    logger: Arc<Logger>,
+}
+
+impl AuthService {
+    pub async fn register(&self, dto: CreateUserDto) -> Result<AuthResponse, AppError> {
+        if self.repo.find_by_email(&dto.email).await?.is_some() {
+            return Err(AppError::Conflict("Email already registered".to_string()));
+        }
+
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        let password_hash = argon2
+            .hash_password(dto.password.as_bytes(), &salt)
+            .map_err(|e| AppError::Internal(e.to_string()))?
+            .to_string();
+
+        let user = User {
+            id: uuid::Uuid::new_v4().to_string(),
+            username: dto.username,
+            email: dto.email,
+            password_hash,
+            created_at: Utc::now(),
+        };
+
+        let created = self.repo.create(user).await?;
+        let token = self.generate_token(&created)?;
+
+        let _ = self.logger.info("User registered", None);
+
+        Ok(AuthResponse {
+            token,
+            user: UserResponse::from(created),
+        })
+    }
+
+    pub async fn login(&self, dto: LoginDto) -> Result<AuthResponse, AppError> {
+        let user = self
+            .repo
+            .find_by_email(&dto.email)
+            .await?
+            .ok_or_else(|| AppError::Unauthorized("Invalid credentials".to_string()))?;
+
+        let parsed_hash = PasswordHash::new(&user.password_hash)
+            .map_err(|e| AppError::Internal(e.to_string()))?;
+        Argon2::default()
+            .verify_password(dto.password.as_bytes(), &parsed_hash)
+            .map_err(|_| AppError::Unauthorized("Invalid credentials".to_string()))?;
+
+        let token = self.generate_token(&user)?;
+        Ok(AuthResponse {
+            token,
+            user: UserResponse::from(user),
+        })
+    }
+
+    fn generate_token(&self, user: &User) -> Result<String, AppError> {
+        let secret = std::env::var("JWT_SECRET").map_err(|_| AppError::Internal("JWT_SECRET not set".to_string()))?;
+        let expiry: u64 = std::env::var("JWT_EXPIRY_SECONDS")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(3600);
+
+        let exp = (Utc::now().timestamp() + expiry as i64) as usize;
+        let claims = Claims {
+            sub: user.id.clone(),
+            username: user.username.clone(),
+            exp,
+        };
+
+        encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret(secret.as_bytes()),
+        )
+        .map_err(|e| AppError::Internal(e.to_string()))
+    }
+}
+
+pub fn register_services(container: &mut rusta::Container) {
+    container.register(AuthService::construct(container));
+}

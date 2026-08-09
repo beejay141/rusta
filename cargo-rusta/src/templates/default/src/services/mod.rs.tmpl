@@ -1,0 +1,30 @@
+use std::sync::Arc;
+
+use rusta::prelude::*;
+use rusta_logger::Logger;
+
+#[injectable]
+pub struct HealthService {
+    #[inject]
+    logger: Arc<Logger>,
+}
+
+impl HealthService {
+    pub async fn check(&self) -> Result<HealthStatus, AppError> {
+        let _ = self.logger.info("Running health check", None);
+        Ok(HealthStatus {
+            status: "ok".to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+        })
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct HealthStatus {
+    pub status: String,
+    pub version: String,
+}
+
+pub fn register_services(container: &mut rusta::Container) {
+    container.register(HealthService::construct(container));
+}

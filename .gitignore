@@ -4,3 +4,29 @@ rusta-docs/dist
 !README.md
 !rusta-docs/src/content/docs/**/*.md
 **/node_modules
+
+# Cargo-rusta build artifacts
+cargo-rusta/target
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.local
+
+# Log files
+*.log
+*.ndjson
+
+# Generated files from cargo-rusta
+test-api/
+test-blog/
+test-minimal/

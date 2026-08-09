@@ -1,0 +1,40 @@
+# ── Builder Stage ─────────────────────────────────────────────────────────────
+FROM rust:1.79-slim AS builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Copy the manifest files
+COPY Cargo.toml Cargo.lock ./
+
+# Build the binary
+WORKDIR /app/{{name}}
+COPY {{name}}/Cargo.toml {{name}}/
+COPY {{name}}/src {{name}}/src
+
+WORKDIR /app
+RUN cargo build --release -p {{name}}
+
+# ── Runtime Stage ─────────────────────────────────────────────────────────────
+FROM debian:bookworm-slim AS runtime
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /app/target/release/{{name}} /app/{{name}}
+
+EXPOSE 3000
+
+CMD ["./{{name}}"]

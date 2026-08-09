@@ -1,0 +1,29 @@
+use serde::Deserialize;
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AppConfig {
+    pub server_port: String,
+    pub mongo_uri: String,
+    pub mongo_db: String,
+    pub jwt_secret: String,
+    pub jwt_expiry_seconds: u64,
+}
+
+impl AppConfig {
+    pub fn from_env() -> Self {
+        Self {
+            server_port: std::env::var("SERVER_PORT")
+                .unwrap_or_else(|_| "0.0.0.0:3000".to_string()),
+            mongo_uri: std::env::var("MONGO_URI")
+                .unwrap_or_else(|_| "mongodb://localhost:27017".to_string()),
+            mongo_db: std::env::var("MONGO_DB")
+                .unwrap_or_else(|_| "{{name}}".to_string()),
+            jwt_secret: std::env::var("JWT_SECRET")
+                .expect("JWT_SECRET must be set"),
+            jwt_expiry_seconds: std::env::var("JWT_EXPIRY_SECONDS")
+                .ok()
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(3600),
+        }
+    }
+}

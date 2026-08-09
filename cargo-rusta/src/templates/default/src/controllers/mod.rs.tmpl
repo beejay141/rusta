@@ -1,0 +1,33 @@
+use std::sync::Arc;
+
+use rusta::prelude::*;
+use rusta_logger::Logger;
+
+use crate::services::HealthService;
+
+#[injectable]
+pub struct HealthController {
+    #[inject]
+    svc: Arc<HealthService>,
+    #[inject]
+    logger: Arc<Logger>,
+}
+
+#[controller("/health")]
+impl HealthController {
+    /// GET /health
+    #[get("/")]
+    pub async fn health(&self) -> Response {
+        match self.svc.check().await {
+            Ok(status) => {
+                let _ = self.logger.info("Health check passed", None);
+                Http::json(status)
+            }
+            Err(e) => e.into_response(),
+        }
+    }
+}
+
+pub fn register_controllers(container: &mut rusta::Container) {
+    container.register(HealthController::construct(container));
+}

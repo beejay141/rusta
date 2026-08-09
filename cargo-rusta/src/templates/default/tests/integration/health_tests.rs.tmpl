@@ -1,0 +1,26 @@
+use crate::setup::startServiceContainer;
+use reqwest::Client;
+
+#[tokio::test]
+async fn test_health_endpoint() {
+    // Start the service container (blocks until ready)
+    let service_container = startServiceContainer();
+
+    let service_port = service_container
+        .get_host_port_ipv4(3000)
+        .await
+        .expect("Failed to get service port");
+    let base_url = format!("http://localhost:{}", service_port);
+    let client = Client::new();
+
+    // Hit the health endpoint
+    let response = client
+        .get(format!("{}/health/", base_url))
+        .send()
+        .await
+        .expect("GET /health failed");
+
+    assert!(response.status().is_success());
+
+    // Container will be stopped when it goes out of scope
+}

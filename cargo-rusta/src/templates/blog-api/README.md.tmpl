@@ -1,0 +1,73 @@
+# {{name}}
+
+A Rusta API project scaffolded with `cargo rusta new --template blog-api`.
+
+## Features
+
+- MongoDB persistence
+- JWT authentication with Argon2 password hashing
+- APM instrumentation
+- Logger integration
+- Integration tests with testcontainers
+- Docker support
+
+## Quick Start
+
+```bash
+# Start MongoDB and the API
+docker compose up --build
+
+# Or run locally (requires MongoDB running)
+cp .env.example .env
+cargo run
+```
+
+The API will be available at `http://localhost:3000`.
+
+## Project Structure
+
+```
+{{name}}/
+├── src/
+│   ├── main.rs           # Application entry point
+│   ├── lib.rs            # Library exports
+│   ├── config.rs         # AppConfig from environment
+│   ├── db.rs             # MongoDB initialization
+│   ├── errors.rs         # AppError enum
+│   ├── middleware/       # JWT guard
+│   ├── models/           # Domain types
+│   ├── repositories/     # MongoDB-backed repositories
+│   ├── services/         # Business logic
+│   └── controllers/      # HTTP handlers
+├── tests/integration/    # Integration tests with testcontainers
+├── Dockerfile
+├── docker-compose.yml
+└── .env.example
+```
+
+## Endpoints
+
+| Method | Path             | Description                              |
+| ------ | ---------------- | ---------------------------------------- |
+| POST   | `/auth/register` | Register a new user (returns JWT + user) |
+| POST   | `/auth/login`    | Login (returns JWT + user)               |
+
+## Environment Variables
+
+| Variable             | Description               | Default                     |
+| -------------------- | ------------------------- | --------------------------- |
+| `SERVER_PORT`        | Server bind address       | `0.0.0.0:3000`              |
+| `MONGO_URI`          | MongoDB connection string | `mongodb://localhost:27017` |
+| `MONGO_DB`           | Database name             | `{{name}}`                  |
+| `JWT_SECRET`         | Secret for signing JWTs   | (required)                  |
+| `JWT_EXPIRY_SECONDS` | Token expiry time         | `3600`                      |
+
+## Running Tests
+
+```bash
+# Build the test image first
+docker build -t {{name}}:test -f {{name}}/Dockerfile .
+
+# Run all tests
+cargo test
+```

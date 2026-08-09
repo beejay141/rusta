@@ -1,0 +1,43 @@
+use async_trait::async_trait;
+use mongodb::Database;
+
+use crate::errors::AppError;
+use crate::models::user::User;
+
+#[async_trait]
+pub trait UserRepository: Send + Sync {
+    async fn find_by_email(&self, email: &str) -> Result<Option<User>, AppError>;
+    async fn create(&self, user: User) -> Result<User, AppError>;
+}
+
+pub struct MongoUserRepository {
+    db: Database,
+}
+
+impl MongoUserRepository {
+    pub fn new(db: Database) -> Self {
+        Self { db }
+    }
+}
+
+#[async_trait]
+impl UserRepository for MongoUserRepository {
+    async fn find_by_email(&self, email: &str) -> Result<Option<User>, AppError> {
+        use mongodb::bson::doc;
+        let collection = self.db.collection::<User>("users");
+        let user = collection.find_one(doc! { "email": email }).await?;
+        Ok(user)
+    }
+
+    async fn create(&self, user: User) -> Result<User, AppError> {
+        let collection = self.db.collection::<User>("users");
+        collection.insert_one(&user).await?;
+        Ok(user)
+    }
+}
+
+pub fn register_repositories(container: &mut rusta::Container) {
+    use std::sync::Arc;
+    let db = container.resolve::<Database>();
+    container.register(Arc::new(MongoUserRepository::new(db)));
+}

@@ -79,7 +79,6 @@ export default defineConfig({
           label: "Examples",
           items: [
             { label: "Blog API Walkthrough", slug: "examples/blog-api" },
-            { label: "Microservices Patterns", slug: "examples/microservices" },
           ],
         },
         {
