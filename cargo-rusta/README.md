@@ -46,7 +46,9 @@ cargo rusta new my-api --force
 ## Templates
 
 ### `default` (minimal)
+
 A minimal API with:
+
 - A `/health` endpoint
 - APM + Logger middleware
 - CORS configuration
@@ -54,7 +56,9 @@ A minimal API with:
 - Integration test scaffold
 
 ### `blog-api`
+
 A full blog API with:
+
 - MongoDB persistence
 - JWT authentication with Argon2
 - User registration & login
@@ -104,6 +108,7 @@ To add a new template:
 4. Use `{{name}}` in `.tmpl` files to reference the project name
 
 Example:
+
 ```
 src/templates/my-template/
 ├── Cargo.toml.tmpl        # Will be rendered with {{name}}

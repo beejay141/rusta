@@ -74,6 +74,22 @@ impl UserController {
 }
 ```
 
+## Quick Start
+
+```bash
+# Install the CLI
+cargo install cargo-rusta
+
+# Scaffold a new project
+cargo rusta new my-api
+cd my-api
+
+# Run it
+cargo run
+```
+
+Or add Rusta to an existing project — see the [Installation guide](/getting-started/installation).
+
 ## Quick Example
 
 ```rust

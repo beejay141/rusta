@@ -12,7 +12,22 @@ sidebar:
 - Rust 1.79 or later (2021 edition)
 - Cargo package manager
 
-## Add to Cargo.toml
+## Scaffold a New Project
+
+The easiest way to get started is with the `cargo-rusta` CLI, which scaffolds a complete project with all dependencies and configuration:
+
+```bash
+cargo install cargo-rusta
+cargo rusta new my-api
+cd my-api
+cargo run
+```
+
+See the [CLI guide](/cli) for full documentation, including template options.
+
+## Add to Existing Project
+
+If you have an existing Rust project, add the crates you need to `Cargo.toml`:
 
 ```toml
 [dependencies]

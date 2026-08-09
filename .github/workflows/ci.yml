@@ -33,6 +33,18 @@ jobs:
       - name: Check workspace
         run: cargo check --workspace
 
+      - name: Build cargo-rusta
+        run: cargo build --release -p cargo-rusta
+
+      - name: Test cargo-rusta scaffolding
+        run: |
+          cd /tmp
+          rm -rf cargo-rusta-test
+          ../rusta/target/release/cargo-rusta new cargo-rusta-test --template default --no-docker --no-tests
+          test -f cargo-rusta-test/Cargo.toml
+          test -f cargo-rusta-test/src/main.rs
+          rm -rf cargo-rusta-test
+
       - name: Run tests
         run: cargo test --workspace
 
@@ -52,21 +64,6 @@ jobs:
           toolchain: stable
           profile: minimal
 
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build (release)
-        run: cargo build --workspace --release
-
-      - name: Run tests (all features)
-        run: cargo test --workspace --all-features
-
       - name: Publish `rusta-di-macros`
         run: cargo publish -p rusta-di-macros
 
@@ -81,6 +78,9 @@ jobs:
 
       - name: Publish `rusta`
         run: cargo publish -p rusta
+
+      - name: Publish `cargo-rusta`
+        run: cargo publish -p cargo-rusta
 
   docs:
     name: Build & Deploy Docs

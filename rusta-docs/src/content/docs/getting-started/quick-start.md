@@ -9,14 +9,29 @@ sidebar:
 
 Build your first Rusta API in 5 minutes.
 
-## 1. Create a New Project
+## Option A: Scaffold with the CLI (recommended)
+
+The fastest way to get a working Rusta project is with the scaffolder:
+
+```bash
+cargo install cargo-rusta
+cargo rusta new my-api
+cd my-api
+cargo run
+```
+
+The API will be available at `http://localhost:3000`. See the [CLI guide](/cli) for template options.
+
+## Option B: Build from Scratch
+
+### 1. Create a New Project
 
 ```bash
 cargo new my-api --bin
 cd my-api
 ```
 
-## 2. Add Dependencies
+### 2. Add Dependencies
 
 ```bash
 # Add to Cargo.toml

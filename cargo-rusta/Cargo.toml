@@ -1,13 +1,17 @@
-[workspace]
-resolver = "2"
-
 [package]
 name = "cargo-rusta"
 version = "0.1.0"
 edition = "2021"
 description = "Scaffold new Rusta API projects"
 license = "MIT OR Apache-2.0"
-publish = false
+
+# Exclude template files from the published package. They contain
+# `{{name}}` placeholders that would break compilation if Cargo
+# tried to build them as Rust source.
+exclude = [
+    "src/templates/**",
+    "target",
+]
 
 [[bin]]
 name = "cargo-rusta"

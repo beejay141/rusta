@@ -49,6 +49,7 @@ export default defineConfig({
               label: "Project Structure",
               slug: "getting-started/project-structure",
             },
+            { label: "CLI", slug: "cli" },
           ],
         },
         {
@@ -77,9 +78,7 @@ export default defineConfig({
         },
         {
           label: "Examples",
-          items: [
-            { label: "Blog API Walkthrough", slug: "examples/blog-api" },
-          ],
+          items: [{ label: "Blog API Walkthrough", slug: "examples/blog-api" }],
         },
         {
           label: "Integrations",

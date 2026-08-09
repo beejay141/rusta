@@ -46,7 +46,10 @@ pub fn create_project(
     hbs.set_strict_mode(false);
 
     // Render every file in the template tree.
-    for entry in WalkDir::new(&template_dir).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(&template_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
         let src_path = entry.path();
         let rel = src_path
             .strip_prefix(&template_dir)
@@ -69,7 +72,10 @@ pub fn create_project(
         }
 
         // Strip the `.tmpl` suffix from the destination filename.
-        let dst_rel = rel_str.strip_suffix(".tmpl").unwrap_or(&rel_str).to_string();
+        let dst_rel = rel_str
+            .strip_suffix(".tmpl")
+            .unwrap_or(&rel_str)
+            .to_string();
         let dst_path = target_dir.join(dst_rel);
 
         if src_path.is_dir() {
@@ -93,15 +99,19 @@ pub fn create_project(
         };
 
         if let Some(parent) = dst_path.parent() {
-            fs::create_dir_all(parent)
-                .with_context(|| format!("Failed to create parent directory {}", parent.display()))?;
+            fs::create_dir_all(parent).with_context(|| {
+                format!("Failed to create parent directory {}", parent.display())
+            })?;
         }
 
         fs::write(&dst_path, rendered)
             .with_context(|| format!("Failed to write file {}", dst_path.display()))?;
     }
 
-    println!("✓ Created Rusta project '{}' using template '{}'", name, template);
+    println!(
+        "✓ Created Rusta project '{}' using template '{}'",
+        name, template
+    );
     println!();
     println!("Next steps:");
     println!("  cd {}", name);

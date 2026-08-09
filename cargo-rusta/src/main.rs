@@ -3,7 +3,12 @@ use clap::{Parser, Subcommand};
 mod scaffold;
 
 #[derive(Parser)]
-#[command(name = "cargo-rusta", bin_name = "cargo rusta", version, about = "Scaffold new Rusta API projects")]
+#[command(
+    name = "cargo-rusta",
+    bin_name = "cargo rusta",
+    version,
+    about = "Scaffold new Rusta API projects"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
