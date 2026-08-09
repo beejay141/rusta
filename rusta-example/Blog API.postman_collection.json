@@ -52,41 +52,33 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
             }
           },
-          "response": [
+          "event": [
             {
-              "name": "Successful Registration",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has token\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.exist;",
+                  "    pm.environment.set(\"authToken\", jsonData.token);",
+                  "    pm.environment.set(\"userId\", jsonData.user.id);",
+                  "});"
                 ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/auth/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "register"]
-                }
-              },
-              "status": "Created",
-              "status_code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"token\": \"<jwt_token>\",\n  \"user\": {\n    \"id\": \"<user_id>\",\n    \"username\": \"johndoe\",\n    \"email\": \"john@example.com\",\n    \"created_at\": \"2024-01-01T00:00:00Z\"\n  }\n}"
+                "type": "text/javascript"
+              }
             }
           ]
         },
@@ -106,8 +98,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           },
           "event": [
@@ -142,11 +139,33 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/posts/",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ""]
+              "raw": "{{baseUrl}}/posts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts"
+              ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Get Post by ID",
@@ -155,16 +174,39 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/posts/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":id"]
-            },
-            "variable": [
-              {
-                "key": "id",
-                "value": "{{postId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{postId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has post ID\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         },
         {
           "name": "Create Post",
@@ -185,9 +227,13 @@
               "raw": "{\n  \"title\": \"My First Blog Post\",\n  \"body\": \"This is the content of my first blog post. It can be as long as you want!\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/posts/",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ""]
+              "raw": "{{baseUrl}}/posts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts"
+              ]
             }
           },
           "event": [
@@ -230,16 +276,39 @@
             },
             "url": {
               "raw": "{{baseUrl}}/posts/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":id"]
-            },
-            "variable": [
-              {
-                "key": "id",
-                "value": "{{postId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{postId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has updated title\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql(\"Updated Blog Post Title\");",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         },
         {
           "name": "Delete Post",
@@ -253,16 +322,34 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/posts/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":id"]
-            },
-            "variable": [
-              {
-                "key": "id",
-                "value": "{{postId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{postId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         }
       ]
     },
@@ -276,16 +363,40 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/posts/:post_id/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":post_id", "comments"]
-            },
-            "variable": [
-              {
-                "key": "post_id",
-                "value": "{{postId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":post_id",
+                "comments"
+              ],
+              "variable": [
+                {
+                  "key": "post_id",
+                  "value": "{{postId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         },
         {
           "name": "Create Comment",
@@ -307,15 +418,21 @@
             },
             "url": {
               "raw": "{{baseUrl}}/posts/:post_id/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":post_id", "comments"]
-            },
-            "variable": [
-              {
-                "key": "post_id",
-                "value": "{{postId}}"
-              }
-            ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":post_id",
+                "comments"
+              ],
+              "variable": [
+                {
+                  "key": "post_id",
+                  "value": "{{postId}}"
+                }
+              ]
+            }
           },
           "event": [
             {
@@ -357,20 +474,45 @@
             },
             "url": {
               "raw": "{{baseUrl}}/posts/:post_id/comments/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":post_id", "comments", ":id"]
-            },
-            "variable": [
-              {
-                "key": "post_id",
-                "value": "{{postId}}"
-              },
-              {
-                "key": "id",
-                "value": "{{commentId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":post_id",
+                "comments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "post_id",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{commentId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has updated body\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.body).to.eql(\"Updated comment content - I changed my mind!\");",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         },
         {
           "name": "Delete Comment",
@@ -384,20 +526,40 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/posts/:post_id/comments/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":post_id", "comments", ":id"]
-            },
-            "variable": [
-              {
-                "key": "post_id",
-                "value": "{{postId}}"
-              },
-              {
-                "key": "id",
-                "value": "{{commentId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":post_id",
+                "comments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "post_id",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{commentId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         },
         {
           "name": "Like Comment",
@@ -411,20 +573,46 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/posts/:post_id/comments/:id/like",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":post_id", "comments", ":id", "like"]
-            },
-            "variable": [
-              {
-                "key": "post_id",
-                "value": "{{postId}}"
-              },
-              {
-                "key": "id",
-                "value": "{{commentId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":post_id",
+                "comments",
+                ":id",
+                "like"
+              ],
+              "variable": [
+                {
+                  "key": "post_id",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{commentId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Like count increased\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.like_count).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         },
         {
           "name": "Unlike Comment",
@@ -438,20 +626,46 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/posts/:post_id/comments/:id/like",
-              "host": ["{{baseUrl}}"],
-              "path": ["posts", ":post_id", "comments", ":id", "like"]
-            },
-            "variable": [
-              {
-                "key": "post_id",
-                "value": "{{postId}}"
-              },
-              {
-                "key": "id",
-                "value": "{{commentId}}"
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "posts",
+                ":post_id",
+                "comments",
+                ":id",
+                "like"
+              ],
+              "variable": [
+                {
+                  "key": "post_id",
+                  "value": "{{postId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{commentId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Like count decreased\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.like_count).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
-          }
+            }
+          ]
         }
       ]
     }

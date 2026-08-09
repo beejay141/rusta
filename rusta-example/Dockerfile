@@ -18,16 +18,18 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 # Copy workspace files
 COPY Cargo.toml Cargo.lock ./
 COPY rusta/Cargo.toml rusta/
+COPY rusta-di/Cargo.toml rusta-di/
 COPY rusta-apm/Cargo.toml rusta-apm/
 COPY rusta-logger/Cargo.toml rusta-logger/
-COPY rusta-macros/Cargo.toml rusta-macros/
+COPY rusta-di-macros/Cargo.toml rusta-di-macros/
 COPY rusta-example/Cargo.toml rusta-example/
 
 # Build the example binary
 COPY rusta/src rusta/src
+COPY rusta-di/src rusta-di/src
 COPY rusta-apm/src rusta-apm/src
 COPY rusta-logger/src rusta-logger/src
-COPY rusta-macros/src rusta-macros/src
+COPY rusta-di-macros/src rusta-di-macros/src
 COPY rusta-example/src rusta-example/src
 COPY rusta-example/benches rusta-example/benches
 

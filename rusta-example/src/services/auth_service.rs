@@ -27,38 +27,12 @@ pub struct AuthService {
 impl AuthService {
     /// Register a new user. Returns a JWT + user response.
     pub async fn register(&self, dto: CreateUserDto) -> Result<AuthResponse, AppError> {
-        self.apm
-            .wrap_span_future(
-                "auth.register",
-                "app",
-                Some(
-                    [(
-                        "email_domain".into(),
-                        json!(dto.email.split('@').nth(1).unwrap_or("unknown")),
-                    )]
-                    .into(),
-                ),
-                self.register_inner(dto),
-            )
-            .await
+        self.register_inner(dto).await
     }
 
     /// Login an existing user. Returns a JWT + user response.
     pub async fn login(&self, dto: LoginDto) -> Result<AuthResponse, AppError> {
-        self.apm
-            .wrap_span_future(
-                "auth.login",
-                "app",
-                Some(
-                    [(
-                        "email_domain".into(),
-                        json!(dto.email.split('@').nth(1).unwrap_or("unknown")),
-                    )]
-                    .into(),
-                ),
-                self.login_inner(dto),
-            )
-            .await
+        self.login_inner(dto).await
     }
 
     /// Verify a JWT and return the claims.
@@ -71,23 +45,6 @@ impl AuthService {
         .map_err(|e| AppError::Unauthorized(format!("Invalid token: {}", e)))?;
 
         Ok(token_data.claims)
-    }
-
-    /// Get a user by ID.
-    pub async fn get_user(&self, id: &str) -> Result<User, AppError> {
-        self.apm
-            .wrap_span_future(
-                "auth.get_user",
-                "app",
-                Some([("user_id".into(), json!(id))].into()),
-                async {
-                    self.repo
-                        .find_by_id(id)
-                        .await?
-                        .ok_or_else(|| AppError::NotFound("User not found".into()))
-                },
-            )
-            .await
     }
 
     async fn register_inner(&self, dto: CreateUserDto) -> Result<AuthResponse, AppError> {
@@ -259,21 +216,5 @@ mod tests {
                 created_at: chrono::Utc::now(),
             })
         }
-    }
-
-    #[tokio::test]
-    async fn auth_service_get_user_calls_repo() {
-        let mut c = rusta::Container::new();
-        c.register(Arc::new(DummyUserRepo) as Arc<dyn crate::repositories::UserRepository>);
-        c.register(Arc::new(crate::config::AppConfig::from_env()));
-        c.register(rusta_apm::Apm::new());
-        c.register(Logger::new());
-
-        let svc: Arc<AuthService> = AuthService::construct(&c);
-
-        let res = svc.get_user("u1").await;
-        assert!(res.is_ok());
-        let user = res.unwrap();
-        assert_eq!(user.id, "u1");
     }
 }

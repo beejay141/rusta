@@ -41,8 +41,7 @@ async fn main() {
             .service_name("blog-api")
             .service_version("0.1.0")
             .environment("development")
-            .add_classification("PUBLIC", "public.ndjson")
-            .add_classification("CONFIDENTIAL", "confidential.ndjson")
+            .add_classification("APPLICATION", "application.ndjson")
             .build(),
     )
     .await;
@@ -86,9 +85,11 @@ async fn main() {
         .build();
 
     // ── Middleware ────────────────────────────────────────────────────────
-    let middleware = MiddlewareChain::new()
-        .chain(logger_middleware)
-        .chain(move |req, next| apm_middleware(apm.clone(), req, next));
+    let middleware = MiddlewareChain::new().chain(logger_middleware).chain(
+        move |req: axum::http::Request<rusta::prelude::Body>, next| {
+            apm_middleware(apm.clone(), req, next)
+        },
+    );
 
     // ── Boot ──────────────────────────────────────────────────────────────
     App::new()

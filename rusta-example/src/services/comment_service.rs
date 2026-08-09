@@ -23,8 +23,10 @@ impl CommentService {
             "app",
             Some([("post_id".into(), json!(post_id))].into()),
         );
+
         let comments = self.repo.find_by_post(post_id).await?;
-        handle.end(Some([("count".into(), json!(comments.len()))].into()));
+        handle.end(None);
+
         Ok(comments)
     }
 

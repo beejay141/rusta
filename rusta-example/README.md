@@ -146,11 +146,36 @@ Use the `correlation_id` field to trace requests across logs:
 ## Running Tests
 
 ```bash
+# Build the test image first (required by integration tests)
+docker build -t rusta-example:test -f rusta-example/Dockerfile .
+
 # Unit and integration tests
 cargo test -p rusta-example
 
 # Benchmarks
 cargo bench -p rusta-example
+```
+
+### Integration Test Architecture
+
+Integration tests live in `tests/integration/` and use **testcontainers** to
+spin up the real service image alongside MongoDB. Each test:
+
+1. Calls `setup::startServiceContainer()` which starts MongoDB and the service
+2. The service container uses a `LogWaitStrategy` that blocks on the
+   `Listening on ...` startup log — no manual polling is needed
+3. Tests exercise the HTTP API via `reqwest`
+4. Containers are automatically stopped when they go out of scope at the end
+   of each test
+
+```
+tests/integration/
+├── mod.rs              # Module declarations
+├── setup/
+│   └── mod.rs          # startServiceContainer() helper
+├── auth_tests.rs       # /auth/register, /auth/login
+├── post_tests.rs       # /posts CRUD
+└── comment_tests.rs    # /posts/:id/comments CRUD + likes
 ```
 
 ## Postman Documentation
