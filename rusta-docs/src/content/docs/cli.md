@@ -31,20 +31,20 @@ cargo rusta new <NAME> [OPTIONS]
 
 ### Arguments
 
-| Argument | Description                    |
-| -------- | ------------------------------ |
+| Argument | Description                       |
+| -------- | --------------------------------- |
 | `<NAME>` | The name of the project to create |
 
 ### Options
 
-| Option              | Description                                              | Default     |
-| ------------------- | -------------------------------------------------------- | ----------- |
-| `-t, --template`    | Template to use (`default`, `blog-api`)                  | `default`   |
-| `--no-docker`       | Skip Docker setup (Dockerfile, docker-compose.yml, .env.example) | `false` |
-| `--no-tests`        | Skip integration tests scaffold                          | `false`     |
-| `--force`           | Overwrite existing directory if it exists                | `false`     |
-| `-h, --help`        | Show help information                                    |             |
-| `-V, --version`     | Show version information                                 |             |
+| Option           | Description                                                      | Default   |
+| ---------------- | ---------------------------------------------------------------- | --------- |
+| `-t, --template` | Template to use (`default`, `blog-api`)                          | `default` |
+| `--no-docker`    | Skip Docker setup (Dockerfile, docker-compose.yml, .env.example) | `false`   |
+| `--no-tests`     | Skip integration tests scaffold                                  | `false`   |
+| `--force`        | Overwrite existing directory if it exists                        | `false`   |
+| `-h, --help`     | Show help information                                            |           |
+| `-V, --version`  | Show version information                                         |           |
 
 ## Examples
 

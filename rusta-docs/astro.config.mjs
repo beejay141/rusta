@@ -80,27 +80,6 @@ export default defineConfig({
           label: "Examples",
           items: [{ label: "Blog API Walkthrough", slug: "examples/blog-api" }],
         },
-        {
-          label: "Integrations",
-          collapsed: true,
-          items: [
-            {
-              label: "MongoDB",
-              slug: "integrations/mongodb",
-              badge: "Coming Soon",
-            },
-            {
-              label: "JWT Authentication",
-              slug: "integrations/jwt-auth",
-              badge: "Coming Soon",
-            },
-            {
-              label: "Docker",
-              slug: "integrations/docker",
-              badge: "Coming Soon",
-            },
-          ],
-        },
       ],
       social: {
         github: "https://github.com/beejay141/rusta",
