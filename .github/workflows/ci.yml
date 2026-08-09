@@ -40,7 +40,7 @@ jobs:
         run: |
           cd /tmp
           rm -rf cargo-rusta-test
-          ../rusta/target/release/cargo-rusta new cargo-rusta-test --template default --no-docker --no-tests
+          ${{ github.workspace }}/target/release/cargo-rusta new cargo-rusta-test --template default --no-docker --no-tests
           test -f cargo-rusta-test/Cargo.toml
           test -f cargo-rusta-test/src/main.rs
           rm -rf cargo-rusta-test
