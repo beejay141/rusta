@@ -6,7 +6,7 @@ description = "Proc-macro support for Rusta dependency injection"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/beejay141/rusta"
 keywords = ["proc-macro", "di", "dependency-injection"]
-categories = ["development-tools", "development-tools::proc-macro-derive"]
+categories = ["development-tools", "development-tools::procedural-macro-helpers"]
 readme = "README.md"
 
 [lib]
