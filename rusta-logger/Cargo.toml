@@ -6,7 +6,7 @@ description = "Structured logging middleware for the Rusta framework"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/beejay141/rusta"
 keywords = ["logging", "structured-logging", "middleware"]
-categories = ["development-tools", "development-tools::logging"]
+categories = ["development-tools", "development-tools::debugging"]
 readme = "README.md"
 
 [features]
