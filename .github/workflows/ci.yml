@@ -13,10 +13,11 @@ on:
         type: boolean
         default: false
       crates:
-        description: 'Select crates to publish (leave empty to publish all)'
+        description: 'Select crates to publish (leave empty or select "all" to publish all)'
         type: choice
         multiple: true
         options:
+          - all
           - rusta-di-macros
           - rusta-di
           - rusta-apm
@@ -82,7 +83,7 @@ jobs:
           profile: minimal
 
       - name: Publish selected crates
-        if: ${{ inputs.crates != '' }}
+        if: ${{ inputs.crates != '' && !contains(inputs.crates, 'all') }}
         run: |
           IFS=',' read -ra CRATES <<< "${{ inputs.crates }}"
           for crate in "${CRATES[@]}"; do
@@ -90,27 +91,27 @@ jobs:
           done
 
       - name: Publish `rusta-di-macros`
-        if: ${{ inputs.crates == '' }}
+        if: ${{ inputs.crates == '' || contains(inputs.crates, 'all') }}
         run: cargo publish -p rusta-di-macros
 
       - name: Publish `rusta-di`
-        if: ${{ inputs.crates == '' }}
+        if: ${{ inputs.crates == '' || contains(inputs.crates, 'all') }}
         run: cargo publish -p rusta-di
 
       - name: Publish `rusta-apm`
-        if: ${{ inputs.crates == '' }}
+        if: ${{ inputs.crates == '' || contains(inputs.crates, 'all') }}
         run: cargo publish -p rusta-apm
 
       - name: Publish `rusta-logger`
-        if: ${{ inputs.crates == '' }}
+        if: ${{ inputs.crates == '' || contains(inputs.crates, 'all') }}
         run: cargo publish -p rusta-logger
 
       - name: Publish `rusta`
-        if: ${{ inputs.crates == '' }}
+        if: ${{ inputs.crates == '' || contains(inputs.crates, 'all') }}
         run: cargo publish -p rusta
 
       - name: Publish `cargo-rusta`
-        if: ${{ inputs.crates == '' }}
+        if: ${{ inputs.crates == '' || contains(inputs.crates, 'all') }}
         run: cargo publish -p cargo-rusta
 
   docs:
