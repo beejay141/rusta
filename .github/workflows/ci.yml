@@ -12,6 +12,18 @@ on:
         description: 'Publish crates to crates.io'
         type: boolean
         default: false
+      crates:
+        description: 'Select crates to publish (leave empty to publish all)'
+        type: choice
+        multiple: true
+        options:
+          - rusta-di-macros
+          - rusta-di
+          - rusta-apm
+          - rusta-logger
+          - rusta
+          - cargo-rusta
+        default: ''
 
 jobs:
   test:
@@ -69,22 +81,36 @@ jobs:
           toolchain: stable
           profile: minimal
 
+      - name: Publish selected crates
+        if: ${{ inputs.crates != '' }}
+        run: |
+          IFS=',' read -ra CRATES <<< "${{ inputs.crates }}"
+          for crate in "${CRATES[@]}"; do
+            cargo publish -p "$crate"
+          done
+
       - name: Publish `rusta-di-macros`
+        if: ${{ inputs.crates == '' }}
         run: cargo publish -p rusta-di-macros
 
       - name: Publish `rusta-di`
+        if: ${{ inputs.crates == '' }}
         run: cargo publish -p rusta-di
 
       - name: Publish `rusta-apm`
+        if: ${{ inputs.crates == '' }}
         run: cargo publish -p rusta-apm
 
       - name: Publish `rusta-logger`
+        if: ${{ inputs.crates == '' }}
         run: cargo publish -p rusta-logger
 
       - name: Publish `rusta`
+        if: ${{ inputs.crates == '' }}
         run: cargo publish -p rusta
 
       - name: Publish `cargo-rusta`
+        if: ${{ inputs.crates == '' }}
         run: cargo publish -p cargo-rusta
 
   docs:
